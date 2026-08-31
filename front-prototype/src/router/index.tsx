@@ -1,9 +1,21 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 
 import { ProAppLayout } from '@/components/layout/ProAppLayout'
-import { INBOUND_ORDER_LIST_PATH } from '@/config/routes'
+import {
+  INBOUND_ORDER_LIST_PATH,
+  TRANSFER_PLAN_LIST_PATH,
+  getTransferPlanDetailPath,
+} from '@/config/routes'
 import { InboundOrderListPage } from '@/pages/inbound/InboundOrderListPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { TransferPlanCreatePage } from '@/pages/transfer-plan/TransferPlanCreatePage'
+import { TransferPlanDetailPage } from '@/pages/transfer-plan/TransferPlanDetailPage'
+import { TransferPlanListPage } from '@/pages/transfer-plan/TransferPlanListPage'
+
+function LegacyTransferPlanDetailRedirect() {
+  const { id = '' } = useParams()
+  return <Navigate to={getTransferPlanDetailPath(id)} replace />
+}
 
 export function AppRouter() {
   return (
@@ -42,21 +54,31 @@ export function AppRouter() {
           element={<PlaceholderPage title="编辑收货订单" />}
         />
 
+        <Route path="order/TransferPlan" element={<TransferPlanListPage />} />
+        <Route
+          path="order/TransferPlan/new"
+          element={<TransferPlanCreatePage />}
+        />
+        <Route
+          path="order/TransferPlan/:id"
+          element={<TransferPlanDetailPage />}
+        />
+
         <Route
           path="orders/transfer-plans"
-          element={<PlaceholderPage title="调拨计划" />}
+          element={<Navigate to={TRANSFER_PLAN_LIST_PATH} replace />}
         />
         <Route
           path="orders/transfer-plans/new"
-          element={<PlaceholderPage title="新增调拨计划" />}
-        />
-        <Route
-          path="orders/transfer-plans/:id"
-          element={<PlaceholderPage title="调拨计划详情" />}
+          element={<Navigate to={`${TRANSFER_PLAN_LIST_PATH}/new`} replace />}
         />
         <Route
           path="orders/transfer-plans/:id/edit"
-          element={<PlaceholderPage title="编辑调拨计划" />}
+          element={<LegacyTransferPlanDetailRedirect />}
+        />
+        <Route
+          path="orders/transfer-plans/:id"
+          element={<LegacyTransferPlanDetailRedirect />}
         />
 
         <Route

@@ -4,9 +4,11 @@ import { Dropdown, Space } from 'antd'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
 import { appMenuData } from '@/config/menu'
+import { APP_ROLES, useCurrentUser } from '@/session/CurrentUserContext'
 
 export function ProAppLayout() {
   const location = useLocation()
+  const { user, setRole } = useCurrentUser()
 
   return (
     <ProLayout
@@ -21,11 +23,16 @@ export function ProAppLayout() {
       }
       avatarProps={{
         icon: <UserOutlined />,
-        title: '管理员（占位）',
+        title: `${user.name}（${user.role}）`,
         render: (_, dom) => (
           <Dropdown
             menu={{
-              items: [{ key: 'profile', label: '个人中心（占位）' }],
+              selectedKeys: [user.role],
+              items: APP_ROLES.map((role) => ({
+                key: role,
+                label: role,
+              })),
+              onClick: ({ key }) => setRole(key as (typeof APP_ROLES)[number]),
             }}
           >
             <Space>{dom}</Space>

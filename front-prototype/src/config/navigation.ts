@@ -1,4 +1,4 @@
-import { INBOUND_ORDER_LIST_PATH } from '@/config/routes'
+import { INBOUND_ORDER_LIST_PATH, TRANSFER_PLAN_LIST_PATH } from '@/config/routes'
 
 export type NavItem = {
   title: string
@@ -16,7 +16,7 @@ export const navigation: NavItem[] = [
       },
       {
         title: '调拨计划',
-        path: '/orders/transfer-plans',
+        path: TRANSFER_PLAN_LIST_PATH,
       },
     ],
   },

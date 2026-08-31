@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "title": "加盟商揽收仓 · 原型标注",
+  "inputs": [
+    {
+      "scope": "inbound-order",
+      "config": "./inbound-order/annotation.config.json",
+      "order": 1
+    },
+    {
+      "scope": "transfer-plan",
+      "config": "./transfer-plan/annotation.config.json",
+      "order": 2
+    }
+  ],
+  "runtime": {
+    "zIndexBase": 2147480000,
+    "initialMode": "annotate"
+  },
+  "output": "./output/annotation.bundle.json",
+  "coverage": "./coverage.md",
+  "htmlOutput": "./output/annotations.html"
+}

@@ -1,6 +1,6 @@
 import type { MenuDataItem } from '@ant-design/pro-components'
 
-import { INBOUND_ORDER_LIST_PATH } from '@/config/routes'
+import { INBOUND_ORDER_LIST_PATH, TRANSFER_PLAN_LIST_PATH } from '@/config/routes'
 
 /** ProLayout 菜单配置：订单管理 → 收货订单 */
 export const appMenuData: MenuDataItem[] = [
@@ -13,7 +13,7 @@ export const appMenuData: MenuDataItem[] = [
         name: '收货订单',
       },
       {
-        path: '/orders/transfer-plans',
+        path: TRANSFER_PLAN_LIST_PATH,
         name: '调拨计划',
       },
     ],
