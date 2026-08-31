@@ -37,12 +37,10 @@ jobs:
 
       - name: Compile annotation bundle
         run: |
-          python "prd-docs/01-加盟商揽收仓需求/prototype-annotation/scripts/compile_annotations.py" \
-            "prd-docs/01-加盟商揽收仓需求/prototype-annotation/annotation.workspace.json"
-          cp "prd-docs/01-加盟商揽收仓需求/prototype-annotation/output/annotation.bundle.json" \
+          python "prd-docs/01-加盟商揽收仓需求/vitamin-prototype-annotation/scripts/compile_annotations.py" \
+            "prd-docs/01-加盟商揽收仓需求/vitamin-prototype-annotation/annotation.workspace.json"
+          cp "prd-docs/01-加盟商揽收仓需求/vitamin-prototype-annotation/output/annotation.bundle.json" \
             "front-prototype/public/annotation-kit/annotation.bundle.json"
-          cp "prd-docs/01-加盟商揽收仓需求/prototype-annotation/assets/annotation-kit/runtime.js" \
-            "front-prototype/public/annotation-kit/runtime.js"
 
       - name: Install and build
         working-directory: front-prototype
