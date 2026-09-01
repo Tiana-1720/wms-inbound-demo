@@ -15,22 +15,22 @@
   "sourceRequirements": [
     {
       "id": "REQ-INBOUND-PUSH-001",
-      "source": "../03-加盟商揽收仓管理后台主PRD.md#§5.1 收货订单状态机",
+      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§5.1 收货订单状态机",
       "page": "/order/Inbound"
     },
     {
       "id": "REQ-INBOUND-PUSH-002",
-      "source": "../03-加盟商揽收仓管理后台主PRD.md#§6.2 收货订单接收与取消（R05/R06/R11）",
+      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§6.2 收货订单接收与取消（R05/R06/R11）",
       "page": "/order/Inbound"
     },
     {
       "id": "REQ-INBOUND-PUSH-003",
-      "source": "../02-字段清单/收货订单-入库单字段清单.md#§5.1 状态与动作",
+      "source": "../02-01-收货订单-入库单字段清单.md#§5.1 状态与动作",
       "page": "/order/Inbound"
     },
     {
       "id": "REQ-INBOUND-PUSH-005",
-      "source": "../收货订单_Demo_列表页.md#§1.4 工具条",
+      "source": "../04-01-收货订单_Demo_列表页.md#§1.4 工具条",
       "page": "/order/Inbound"
     }
   ],
