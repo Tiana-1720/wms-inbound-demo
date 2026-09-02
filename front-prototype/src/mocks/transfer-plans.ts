@@ -1,4 +1,4 @@
-import { sumTransferPlanLines } from '@/domain/transfer-plan/filter'
+﻿import { sumTransferPlanLines } from '@/domain/transfer-plan/filter'
 import type { TransferPlan } from '@/domain/transfer-plan/types'
 
 function withSummary(
@@ -75,7 +75,7 @@ export const transferPlanMockData: TransferPlan[] = [
         操作人: '系统',
       },
       {
-        操作内容: 'PDA 装车发车',
+        操作内容: 'PDA 装车',
         操作时间: '2026-08-11 14:05:00',
         操作人: '揽收仓操作员-李四',
       },
@@ -113,7 +113,7 @@ export const transferPlanMockData: TransferPlan[] = [
     ],
     操作日志: [
       {
-        操作内容: 'PDA 装车发车',
+        操作内容: 'PDA 装车',
         操作时间: '2026-08-15 09:30:00',
         操作人: '揽收仓操作员-张三',
       },
@@ -149,7 +149,7 @@ export const transferPlanMockData: TransferPlan[] = [
         操作人: '系统',
       },
       {
-        操作内容: 'PDA 装车发车',
+        操作内容: 'PDA 装车',
         操作时间: '2026-08-19 10:00:00',
         操作人: '揽收仓操作员-王五',
       },
@@ -194,7 +194,7 @@ export const transferPlanMockData: TransferPlan[] = [
     ],
     操作日志: [
       {
-        操作内容: 'PDA 装车发车',
+        操作内容: 'PDA 装车',
         操作时间: '2026-08-26 08:15:00',
         操作人: '揽收仓操作员-赵六',
       },

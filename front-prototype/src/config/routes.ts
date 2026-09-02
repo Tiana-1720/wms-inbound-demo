@@ -16,3 +16,16 @@ export function getTransferPlanCreatePath() {
 export function getTransferPlanDetailPath(planNo: string) {
   return `${TRANSFER_PLAN_LIST_PATH}/${planNo}`
 }
+
+/** PDA 分货作业页（Demo PRD 04-05） */
+export const PDA_SORTING_PATH = '/pda/inbound/sorting'
+
+/** PDA 上架作业页（Demo PRD 04-06） */
+export const PDA_PUTAWAY_PATH = '/pda/inbound/putaway'
+
+/** PDA 装车计划列表（Demo PRD 04-07 简化列表） */
+export const PDA_TRANSFER_LOAD_PATH = '/pda/transfer/load'
+
+export function getTransferLoadWorkPath(planNo: string) {
+  return `${PDA_TRANSFER_LOAD_PATH}/${planNo}`
+}

@@ -1,12 +1,17 @@
 import { Navigate, Route, Routes, useParams } from 'react-router-dom'
 
 import { ProAppLayout } from '@/components/layout/ProAppLayout'
+import { PdaDeviceFrame } from '@/components/pda/PdaDeviceFrame'
 import {
   INBOUND_ORDER_LIST_PATH,
   TRANSFER_PLAN_LIST_PATH,
   getTransferPlanDetailPath,
 } from '@/config/routes'
 import { InboundOrderListPage } from '@/pages/inbound/InboundOrderListPage'
+import { LoadPlanListPage } from '@/pages/pda/load/LoadPlanListPage'
+import { LoadWorkPage } from '@/pages/pda/load/LoadWorkPage'
+import { PutawayPage } from '@/pages/pda/putaway/PutawayPage'
+import { SortingPage } from '@/pages/pda/sorting/SortingPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { TransferPlanCreatePage } from '@/pages/transfer-plan/TransferPlanCreatePage'
 import { TransferPlanDetailPage } from '@/pages/transfer-plan/TransferPlanDetailPage'
@@ -97,6 +102,20 @@ export function AppRouter() {
           path="sales/orders/:id/edit"
           element={<Navigate to={INBOUND_ORDER_LIST_PATH} replace />}
         />
+
+        <Route element={<PdaDeviceFrame />}>
+          <Route path="pda/inbound/sorting" element={<SortingPage />} />
+          <Route path="pda/inbound/putaway" element={<PutawayPage />} />
+          <Route
+            path="pda/inbound/putaway/:jobNo/*"
+            element={<Navigate to="/pda/inbound/putaway" replace />}
+          />
+          <Route path="pda/transfer/load" element={<LoadPlanListPage />} />
+          <Route
+            path="pda/transfer/load/:planNo"
+            element={<LoadWorkPage />}
+          />
+        </Route>
 
         <Route
           path="*"
