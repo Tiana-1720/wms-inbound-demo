@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "title": "PDA 分货 · 原型标注",
+  "scope": "pda-sorting",
+  "sourceBase": ".",
+  "runtime": {
+    "zIndexBase": 2147480000,
+    "initialMode": "annotate"
+  },
+  "mermaid": {
+    "enabled": true,
+    "src": "",
+    "options": {}
+  },
+  "sourceRequirements": [
+    {
+      "id": "REQ-PDA-SORT-001",
+      "source": "../04-05-分货_Demo.md#§3 进入弹窗（作业托数）",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-002",
+      "source": "../04-05-分货_Demo.md#§4 扫描区",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-003",
+      "source": "../03-02-加盟商揽收仓PDA主PRD.md#§十二 分货绑托",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-004",
+      "source": "../04-05-分货_Demo.md#§6 运单信息区",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-005",
+      "source": "../04-05-分货_Demo.md#§7–§9 作业格与绑托",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-006",
+      "source": "../04-05-分货_Demo.md#§5 落托确认弹窗",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-007",
+      "source": "../02-01-收货订单-入库单字段清单.md#§一、§二",
+      "page": "/pda/inbound/sorting"
+    },
+    {
+      "id": "REQ-PDA-SORT-MOCK",
+      "source": "../04-05-分货_Demo.md#§12 Mock 数据规格",
+      "page": "/pda/inbound/sorting"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "1",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "作业托数弹窗",
+      "order": 1,
+      "target": { "selector": "[data-anno='pda-sorting-setup-modal']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "1",
+      "sourceRefs": ["REQ-PDA-SORT-001", "REQ-PDA-SORT-003"]
+    },
+    {
+      "id": "2",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "扫描区与校验",
+      "order": 2,
+      "target": { "selector": "[data-anno='pda-sorting-scan']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "2",
+      "sourceRefs": ["REQ-PDA-SORT-002", "REQ-PDA-SORT-003"]
+    },
+    {
+      "id": "3",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "运单信息区",
+      "order": 3,
+      "target": { "selector": "[data-anno='pda-sorting-waybill']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "3",
+      "sourceRefs": ["REQ-PDA-SORT-004", "REQ-PDA-SORT-007"]
+    },
+    {
+      "id": "4",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "托列表与确认绑托",
+      "order": 4,
+      "target": { "selector": "[data-anno='pda-sorting-pallets']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "4",
+      "sourceRefs": ["REQ-PDA-SORT-005", "REQ-PDA-SORT-003"]
+    },
+    {
+      "id": "5",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "落托确认弹窗",
+      "order": 5,
+      "target": { "selector": "[data-anno='pda-sorting-drop-confirm']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "5",
+      "sourceRefs": ["REQ-PDA-SORT-006"]
+    },
+    {
+      "id": "A1",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "原型 Mock · 可扫描箱号",
+      "order": 6,
+      "target": { "selector": "[data-anno='pda-sorting-scan']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "A1",
+      "sourceRefs": ["REQ-PDA-SORT-MOCK"]
+    }
+  ]
+}

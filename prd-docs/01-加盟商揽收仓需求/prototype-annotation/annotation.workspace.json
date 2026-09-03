@@ -11,6 +11,21 @@
       "scope": "transfer-plan",
       "config": "./transfer-plan/annotation.config.json",
       "order": 2
+    },
+    {
+      "scope": "pda-sorting",
+      "config": "./pda-sorting/annotation.config.json",
+      "order": 3
+    },
+    {
+      "scope": "pda-putaway",
+      "config": "./pda-putaway/annotation.config.json",
+      "order": 4
+    },
+    {
+      "scope": "pda-load",
+      "config": "./pda-load/annotation.config.json",
+      "order": 5
     }
   ],
   "runtime": {

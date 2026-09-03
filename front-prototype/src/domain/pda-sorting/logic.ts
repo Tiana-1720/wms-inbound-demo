@@ -1,5 +1,5 @@
-import { SMALL_TICKET_MAX_PIECES } from '@/domain/pda-sorting/constants'
 import type {
+  BindPalletError,
   PalletSlot,
   ScanAssignError,
   ScannedBox,
@@ -7,12 +7,23 @@ import type {
   SortingWaybill,
 } from '@/domain/pda-sorting/types'
 
-export function isSmallTicket(预报箱数: number) {
-  return 预报箱数 <= SMALL_TICKET_MAX_PIECES
+export type SortingParams = {
+  /** 小票阈值 M */
+  smallTicketThreshold: number
+  /** 小票混托票数上限 P */
+  smallTicketMixMax: number
+}
+
+export function isSmallTicket(预报箱数: number, m: number) {
+  return 预报箱数 <= m
 }
 
 export function getPalletWaybills(pallet: PalletSlot) {
   return [...new Set(pallet.boxes.map((item) => item.运单号))]
+}
+
+export function countWaybillOnPallet(pallet: PalletSlot, 运单号: string) {
+  return pallet.boxes.filter((item) => item.运单号 === 运单号).length
 }
 
 export function getWaybillPalletIndex(
@@ -25,21 +36,20 @@ export function getWaybillPalletIndex(
   return index >= 0 ? index : null
 }
 
-export function createPalletSlot(seq: number): PalletSlot {
+export function formatPalletNo(seq: number) {
+  return `PL250101${String(seq).padStart(5, '0')}`
+}
+
+export function createPalletSlot(): PalletSlot {
   return {
-    托号: `PL250101${String(seq).padStart(5, '0')}`,
+    托号: null,
     boxes: [],
   }
 }
 
-export function createSession(
-  slotCount: number,
-  palletSeqStart = 1,
-): SortingSession {
+export function createSession(slotCount: number): SortingSession {
   return {
-    pallets: Array.from({ length: slotCount }, (_, index) =>
-      createPalletSlot(palletSeqStart + index),
-    ),
+    pallets: Array.from({ length: slotCount }, () => createPalletSlot()),
     activePalletIndex: 0,
     highlightedBoxNo: null,
   }
@@ -49,21 +59,29 @@ function canPlaceOnPallet(
   pallet: PalletSlot,
   waybill: SortingWaybill,
   waybillMap: Map<string, SortingWaybill>,
+  params: SortingParams,
 ): ScanAssignError | null {
   if (pallet.boxes.length === 0) return null
 
   const waybillsOnPallet = getPalletWaybills(pallet)
   if (waybillsOnPallet.includes(waybill.运单号)) return null
 
-  if (!isSmallTicket(waybill.预报箱数)) {
+  if (!isSmallTicket(waybill.预报箱数, params.smallTicketThreshold)) {
     return 'largeTicketMix'
   }
 
   for (const no of waybillsOnPallet) {
     const existing = waybillMap.get(no)
-    if (existing && !isSmallTicket(existing.预报箱数)) {
+    if (
+      existing &&
+      !isSmallTicket(existing.预报箱数, params.smallTicketThreshold)
+    ) {
       return 'largeTicketMix'
     }
+  }
+
+  if (waybillsOnPallet.length >= params.smallTicketMixMax) {
+    return 'mixLimitExceeded'
   }
 
   return null
@@ -78,12 +96,15 @@ function findMixableSlotIndex(
   session: SortingSession,
   waybill: SortingWaybill,
   waybillMap: Map<string, SortingWaybill>,
+  params: SortingParams,
 ): number | null {
-  if (!isSmallTicket(waybill.预报箱数)) return null
+  if (!isSmallTicket(waybill.预报箱数, params.smallTicketThreshold)) {
+    return null
+  }
   const index = session.pallets.findIndex(
     (pallet) =>
       pallet.boxes.length > 0 &&
-      canPlaceOnPallet(pallet, waybill, waybillMap) == null,
+      canPlaceOnPallet(pallet, waybill, waybillMap, params) == null,
   )
   return index >= 0 ? index : null
 }
@@ -91,28 +112,37 @@ function findMixableSlotIndex(
 export function resolveTargetPalletIndex(
   session: SortingSession,
   waybill: SortingWaybill,
-  slotCount: number,
   waybillMap: Map<string, SortingWaybill>,
+  params: SortingParams,
 ): number | ScanAssignError {
   const existing = getWaybillPalletIndex(session, waybill.运单号)
   if (existing != null) {
-    const err = canPlaceOnPallet(session.pallets[existing], waybill, waybillMap)
+    const err = canPlaceOnPallet(
+      session.pallets[existing],
+      waybill,
+      waybillMap,
+      params,
+    )
     if (err) return err
     return existing
   }
 
-  // N=1：小票可混托到已有兼容格；N>1：新运单仅占用空闲格
-  if (slotCount === 1) {
-    const mixIndex = findMixableSlotIndex(session, waybill, waybillMap)
+  const isSmall = isSmallTicket(waybill.预报箱数, params.smallTicketThreshold)
+
+  // 小票首箱：优先落入已有小票混托格（N=1 / N>1 均适用）
+  if (isSmall) {
+    const mixIndex = findMixableSlotIndex(session, waybill, waybillMap, params)
     if (mixIndex != null) return mixIndex
   }
 
+  // 大票首箱或无可混托格：占最小空闲格（新托）
   const emptyIndex = findMinEmptySlotIndex(session)
   if (emptyIndex != null) {
     const err = canPlaceOnPallet(
       session.pallets[emptyIndex],
       waybill,
       waybillMap,
+      params,
     )
     if (err) return err
     return emptyIndex
@@ -138,17 +168,44 @@ export function appendBoxToSession(
   }
 }
 
+export function validatePalletBind(
+  pallet: PalletSlot,
+  waybillMap: Map<string, SortingWaybill>,
+  params: SortingParams,
+): BindPalletError | null {
+  if (pallet.boxes.length === 0) return 'emptyPallet'
+
+  for (const 运单号 of getPalletWaybills(pallet)) {
+    const waybill = waybillMap.get(运单号)
+    if (!waybill) continue
+    if (isSmallTicket(waybill.预报箱数, params.smallTicketThreshold)) {
+      const scanned = countWaybillOnPallet(pallet, 运单号)
+      if (scanned < waybill.预报箱数) {
+        return 'smallTicketIncomplete'
+      }
+    }
+  }
+
+  return null
+}
+
 export function bindPallet(
   session: SortingSession,
   palletIndex: number,
   nextPalletSeq: number,
-): { session: SortingSession; nextSeq: number; boundBoxes: ScannedBox[] } | null {
+): {
+  session: SortingSession
+  nextSeq: number
+  boundBoxes: ScannedBox[]
+  托号: string
+} | null {
   const pallet = session.pallets[palletIndex]
   if (!pallet || pallet.boxes.length === 0) return null
 
+  const 托号 = formatPalletNo(nextPalletSeq)
   const boundBoxes = [...pallet.boxes]
   const pallets = session.pallets.map((item, index) =>
-    index === palletIndex ? createPalletSlot(nextPalletSeq) : item,
+    index === palletIndex ? createPalletSlot() : item,
   )
 
   return {
@@ -160,6 +217,7 @@ export function bindPallet(
     },
     nextSeq: nextPalletSeq + 1,
     boundBoxes,
+    托号,
   }
 }
 
@@ -170,6 +228,12 @@ export const SCAN_ERROR_MESSAGE: Record<ScanAssignError, string> = {
   alreadyScanned: '该箱已扫描',
   largeTicketMix: '大票不可混托',
   smallTicketWrongPallet: '小票须在同一托',
-  mustBindCurrentPallet: '请先确认绑托释放作业格',
-  noActivePallet: '无可用作业格',
+  mustBindCurrentPallet: '请先确认绑托释放托',
+  noActivePallet: '无可用托',
+  mixLimitExceeded: '混托票数已达上限',
+}
+
+export const BIND_ERROR_MESSAGE: Record<BindPalletError, string> = {
+  emptyPallet: '当前格无扫描箱号',
+  smallTicketIncomplete: '小票须扫齐全部箱方可绑托',
 }

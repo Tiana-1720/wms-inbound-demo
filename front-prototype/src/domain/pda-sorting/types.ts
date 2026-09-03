@@ -14,7 +14,8 @@ export type ScannedBox = {
 }
 
 export type PalletSlot = {
-  托号: string
+  /** 点击托满确认绑托后由系统生成；作业中未绑托时为 null */
+  托号: string | null
   boxes: ScannedBox[]
 }
 
@@ -34,3 +35,6 @@ export type ScanAssignError =
   | 'smallTicketWrongPallet'
   | 'mustBindCurrentPallet'
   | 'noActivePallet'
+  | 'mixLimitExceeded'
+
+export type BindPalletError = 'emptyPallet' | 'smallTicketIncomplete'

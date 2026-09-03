@@ -5,6 +5,7 @@ import {
   PDA_PUTAWAY_PATH,
   PDA_SORTING_PATH,
   PDA_TRANSFER_LOAD_PATH,
+  SORTING_CONFIG_PATH,
   TRANSFER_PLAN_LIST_PATH,
 } from '@/config/routes'
 
@@ -21,6 +22,10 @@ export const appMenuData: MenuDataItem[] = [
       {
         path: TRANSFER_PLAN_LIST_PATH,
         name: '调拨计划',
+      },
+      {
+        path: SORTING_CONFIG_PATH,
+        name: '分货参数',
       },
     ],
   },

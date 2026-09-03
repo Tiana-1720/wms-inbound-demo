@@ -1,4 +1,14 @@
-export type TransferLoadPlanStatus = '待出库' | '已出库' | '已完成' | '已取消'
+import type { TransferPlanStatus } from '@/domain/transfer-plan/constants'
+
+export type TransferLoadDriverInfo = {
+  司机: string
+  电话: string
+  车牌号: string
+}
+
+export type OutboundOrderStatus = '未生成' | '已复核' | '已出库'
+
+export type TransferLoadPlanStatus = TransferPlanStatus
 
 export type TransferLoadLine = {
   运单号: string
@@ -13,6 +23,7 @@ export type TransferLoadPlan = {
   调出仓库: string
   调入仓库: string
   状态: TransferLoadPlanStatus
+  出库单状态: OutboundOrderStatus
   汇总箱数: number
   汇总重量: number
   汇总体积: number

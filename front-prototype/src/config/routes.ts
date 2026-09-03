@@ -17,6 +17,9 @@ export function getTransferPlanDetailPath(planNo: string) {
   return `${TRANSFER_PLAN_LIST_PATH}/${planNo}`
 }
 
+/** 加盟揽收仓分货参数（管理后台 §3.5） */
+export const SORTING_CONFIG_PATH = '/settings/sorting-config'
+
 /** PDA 分货作业页（Demo PRD 04-05） */
 export const PDA_SORTING_PATH = '/pda/inbound/sorting'
 

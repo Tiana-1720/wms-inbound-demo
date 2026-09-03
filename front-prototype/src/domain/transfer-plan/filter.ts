@@ -56,6 +56,8 @@ export function countByTransferPlanTab(
   const counts = {
     全部: plans.length,
     待出库: 0,
+    已下架: 0,
+    已复核: 0,
     已出库: 0,
     已完成: 0,
     已取消: 0,

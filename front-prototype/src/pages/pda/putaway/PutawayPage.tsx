@@ -1,4 +1,8 @@
-import { App, Button, Card, Empty, Modal, theme } from 'antd'
+/**
+ * 上架 PDA 页（04-06）：子页 A 入口 / B 作业 / C 明细。
+ * 小票混托：多运单共一张上架单；扫托上任一箱进入该单，确认上架整托（含托上全部运单）。
+ */
+import { App, Button, Card, Empty, Modal, Tabs, Tag, theme } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { LocationPicker } from '@/components/pda/LocationPicker'
@@ -9,14 +13,18 @@ import {
 import { PdaNavBar } from '@/components/pda/PdaNavBar'
 import { ScanInput } from '@/components/pda/ScanInput'
 import {
+  findLocationMismatchOnPallet,
+  formatWaybillNos,
   getOrderPutawayLocation,
   isLocationLocked,
 } from '@/domain/putaway/logic'
-import type { PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
+import type { PutawayPallet } from '@/domain/putaway/types'
 import {
   calcPutawayProgress,
   confirmPutawayPallet,
   getPutawayOrder,
+  getPutawayWorkContext,
+  listPendingPutawayOrders,
   lookupPutawayBox,
 } from '@/mocks/putaway'
 
@@ -26,10 +34,13 @@ const PUTAWAY_SCAN_ERROR = {
   alreadyPutaway: '该箱已上架，不可重复上架',
 } as const
 
-type ScanContext = {
-  order: PutawayOrder
-  pallet: PutawayPallet
-  boxNo: string
+type Screen = 'entry' | 'work' | 'detail'
+type DetailTab = '全部' | '已上架' | '未上架'
+
+type WorkContext = {
+  jobNo: string
+  focus托号: string
+  boxNo: string | null
 }
 
 export function PutawayPage() {
@@ -37,24 +48,44 @@ export function PutawayPage() {
   const { token } = theme.useToken()
 
   const [tick, setTick] = useState(0)
-  const [context, setContext] = useState<ScanContext | null>(null)
-  const [draftLocation, setDraftLocation] = useState<string | null>(null)
+  const [screen, setScreen] = useState<Screen>('entry')
+  const [work, setWork] = useState<WorkContext | null>(null)
+  const [detailTab, setDetailTab] = useState<DetailTab>('全部')
+  const [draftByPallet, setDraftByPallet] = useState<Record<string, string>>({})
+
+  const pendingOrders = useMemo(() => listPendingPutawayOrders(), [tick])
 
   const order = useMemo(
-    () => (context ? getPutawayOrder(context.order.作业单号) : null),
-    [context, tick],
+    () => (work ? getPutawayOrder(work.jobNo) : null),
+    [work, tick],
   )
 
-  const pallet = useMemo(() => {
-    if (!order || !context) return null
-    return order.托明细.find((item) => item.托号 === context.pallet.托号) ?? null
-  }, [order, context, tick])
+  const focusPallet = useMemo(() => {
+    if (!order || !work) return null
+    return (
+      order.托明细.find((item) => item.托号 === work.focus托号) ??
+      order.托明细.find((item) => item.上架状态 === '待上架') ??
+      null
+    )
+  }, [order, work, tick])
 
   const panelStyle = {
     background: token.colorBgContainer,
     border: `1px solid ${token.colorBorder}`,
     borderRadius: 8,
   } as const
+
+  const openWork = (ctx: WorkContext) => {
+    setWork(ctx)
+    setDraftByPallet({})
+    setScreen('work')
+  }
+
+  const backToEntry = () => {
+    setWork(null)
+    setDraftByPallet({})
+    setScreen('entry')
+  }
 
   const handleScan = (raw: string) => {
     const result = lookupPutawayBox(raw)
@@ -71,72 +102,346 @@ export function PutawayPage() {
       return
     }
 
-    setContext({
-      order: result.order,
-      pallet: result.pallet,
+    openWork({
+      jobNo: result.order.作业单号,
+      focus托号: result.pallet.托号,
       boxNo: result.boxNo,
     })
-    setDraftLocation(null)
+  }
+
+  const handleOpenFromList = (jobNo: string) => {
+    const ctx = getPutawayWorkContext(jobNo)
+    if (!ctx) return
+    openWork({
+      jobNo: ctx.order.作业单号,
+      focus托号: ctx.pallet.托号,
+      boxNo: ctx.boxNo,
+    })
   }
 
   const inheritedLocation = order ? getOrderPutawayLocation(order) : null
   const locationLocked = order ? isLocationLocked(order) : false
-  const effectiveLocation =
-    inheritedLocation ?? draftLocation ?? pallet?.目标库位 ?? null
 
-  const handleReset = () => {
-    setContext(null)
-    setDraftLocation(null)
+  const getEffectiveLocation = (pallet: PutawayPallet) => {
+    if (locationLocked && inheritedLocation) return inheritedLocation
+    return draftByPallet[pallet.托号] ?? pallet.目标库位 ?? null
   }
 
-  const doConfirm = () => {
-    if (!order || !pallet || !effectiveLocation) return
-    confirmPutawayPallet(order.作业单号, pallet.托号, effectiveLocation)
+  const handleReset = () => {
+    setDraftByPallet({})
+  }
+
+  const doConfirm = (pallet: PutawayPallet, location: string) => {
+    if (!order) return
+    confirmPutawayPallet(order.作业单号, pallet.托号, location)
     setTick((v) => v + 1)
 
     const updated = getPutawayOrder(order.作业单号)!
     if (updated.状态 === '已完成') {
       message.success('上架完成')
-      setContext(null)
-      setDraftLocation(null)
+      backToEntry()
       return
     }
     message.success('上架成功')
-    setContext(null)
-    setDraftLocation(null)
+    const next = updated.托明细.find((item) => item.上架状态 === '待上架')
+    if (next) {
+      setWork({
+        jobNo: updated.作业单号,
+        focus托号: next.托号,
+        boxNo: next.首箱号,
+      })
+    }
+    setDraftByPallet({})
   }
 
-  const handleConfirm = () => {
-    if (!order || !pallet || !effectiveLocation) return
+  const handleConfirm = (pallet: PutawayPallet) => {
+    const effectiveLocation = getEffectiveLocation(pallet)
+    if (!order || !effectiveLocation) return
     if (!locationLocked) {
-      const history = order.历史上架库位
-      if (history && history !== effectiveLocation) {
+      const mismatch = findLocationMismatchOnPallet(
+        order,
+        pallet,
+        effectiveLocation,
+      )
+      if (mismatch) {
         Modal.confirm({
           title: '提示',
-          content: `当前库位和运单已上架的历史库位${history}不一致，是否确认上架`,
+          content: `运单${mismatch.运单号}的历史库位${mismatch.历史上架库位}与当前库位不一致，是否确认上架`,
           okText: '确认上架',
           cancelText: '取消',
-          onOk: doConfirm,
+          onOk: () => doConfirm(pallet, effectiveLocation),
         })
         return
       }
     }
-    doConfirm()
+    doConfirm(pallet, effectiveLocation)
   }
 
   const progress = order ? calcPutawayProgress(order) : null
-  const showConfirm = !!pallet && pallet.上架状态 === '待上架' && !!effectiveLocation
-  const showReset = !!context
+  const focusReady =
+    focusPallet &&
+    focusPallet.上架状态 === '待上架' &&
+    !!getEffectiveLocation(focusPallet)
+  const showReset = screen === 'work' && Object.keys(draftByPallet).length > 0
+
+  const detailRows = useMemo(() => {
+    if (!order) return []
+    const rows: { 托号: string; 运单号: string; 箱号: string; 库位: string }[] =
+      []
+    for (const pallet of order.托明细) {
+      const loc = pallet.目标库位 ?? inheritedLocation ?? '-'
+      for (const box of pallet.箱号列表) {
+        rows.push({
+          托号: pallet.托号,
+          运单号: pallet.箱运单[box] ?? '-',
+          箱号: box,
+          库位: loc,
+        })
+      }
+    }
+    return rows
+  }, [order, inheritedLocation, tick])
+
+  const filteredDetailRows = detailRows.filter((row) => {
+    const pallet = order?.托明细.find((item) => item.托号 === row.托号)
+    if (!pallet) return false
+    if (detailTab === '全部') return true
+    if (detailTab === '已上架') return pallet.上架状态 === '已上架'
+    return pallet.上架状态 === '待上架'
+  })
+
+  const renderPalletCard = (pallet: PutawayPallet) => {
+    const isFocus = focusPallet?.托号 === pallet.托号
+    const effectiveLocation = getEffectiveLocation(pallet)
+    const readonlyPallet = pallet.上架状态 === '已上架'
+
+    return (
+      <Card
+        key={pallet.托号}
+        size="small"
+        hoverable={!readonlyPallet}
+        style={{
+          marginBottom: 8,
+          ...panelStyle,
+          border: isFocus
+            ? `1px solid ${token.colorPrimary}`
+            : panelStyle.border,
+        }}
+        onClick={() => {
+          if (readonlyPallet || !work) return
+          setWork({ ...work, focus托号: pallet.托号, boxNo: pallet.首箱号 })
+        }}
+      >
+        <div style={{ fontWeight: 600, marginBottom: 8 }}>托号 {pallet.托号}</div>
+        {pallet.运单号列表.length > 1 ? (
+          <div
+            style={{
+              marginBottom: 8,
+              fontSize: 12,
+              color: token.colorTextSecondary,
+            }}
+          >
+            运单：{pallet.运单号列表.join('、')}
+          </div>
+        ) : null}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            gap: 8,
+          }}
+        >
+          <span style={{ color: token.colorTextSecondary }}>
+            箱号 {pallet.首箱号}...({pallet.件数}箱)
+          </span>
+          {readonlyPallet ? (
+            <span style={{ color: token.colorTextSecondary }}>
+              {pallet.目标库位}
+            </span>
+          ) : locationLocked ? (
+            <span style={{ color: token.colorTextSecondary }}>
+              {effectiveLocation}（自动带出）
+            </span>
+          ) : (
+            <LocationPicker
+              value={effectiveLocation}
+              onChange={(loc) =>
+                setDraftByPallet((prev) => ({ ...prev, [pallet.托号]: loc }))
+              }
+            />
+          )}
+        </div>
+      </Card>
+    )
+  }
+
+  if (screen === 'detail' && order) {
+    return (
+      <div
+        data-anno="pda-putaway-detail"
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: token.colorBgLayout,
+        }}
+      >
+        <PdaNavBar title="上架明细" onBack={() => setScreen('work')} />
+        <div style={{ padding: 12 }}>
+          <Tabs
+            activeKey={detailTab}
+            onChange={(key) => setDetailTab(key as DetailTab)}
+            items={[
+              { key: '全部', label: '全部' },
+              { key: '已上架', label: '已上架' },
+              { key: '未上架', label: '未上架' },
+            ]}
+          />
+        </div>
+        <div style={{ flex: 1, overflow: 'auto', padding: 12, paddingTop: 0 }}>
+          {filteredDetailRows.length === 0 ? (
+            <Empty description="暂无明细" />
+          ) : (
+            filteredDetailRows.map((row) => (
+              <Card
+                key={`${row.托号}-${row.运单号}-${row.箱号}`}
+                size="small"
+                style={{ marginBottom: 8, ...panelStyle }}
+              >
+                <div>托号 {row.托号}</div>
+                <div style={{ color: token.colorTextSecondary }}>
+                  运单号 {row.运单号}
+                </div>
+                <div style={{ color: token.colorTextSecondary }}>
+                  箱号 {row.箱号}
+                </div>
+                <div style={{ color: token.colorTextSecondary }}>
+                  库位 {row.库位}
+                </div>
+              </Card>
+            ))
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (screen === 'work' && order && work) {
+    return (
+      <div
+        data-anno="pda-putaway-work"
+        style={{
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          background: token.colorBgLayout,
+        }}
+      >
+        <PdaNavBar title="上架" onBack={backToEntry} />
+
+        <div
+          data-anno="pda-putaway-work-header"
+          style={{
+            flexShrink: 0,
+            margin: 12,
+            marginBottom: 0,
+            padding: '12px 16px',
+            ...panelStyle,
+          }}
+        >
+          <div>
+            运单号：{formatWaybillNos(order)}　作业单号：{order.作业单号}
+          </div>
+          {order.运单列表.length > 1 ? (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 12,
+                color: token.colorTextSecondary,
+              }}
+            >
+              共 {order.运单列表.length} 票　
+              {order.运单列表
+                .map((item) => `${item.运单号}(${item.件数}箱)`)
+                .join('、')}
+            </div>
+          ) : null}
+          <div style={{ marginTop: 8 }}>作业类型：{order.作业类型}</div>
+          {progress ? (
+            <div
+              role="button"
+              tabIndex={0}
+              style={{
+                marginTop: 8,
+                color: token.colorPrimary,
+                cursor: 'pointer',
+              }}
+              onClick={() => setScreen('detail')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') setScreen('detail')
+              }}
+            >
+              已上架：{progress.已上架箱数}箱 / {progress.已上架托数}托　未上架：
+              {progress.未上架箱数}箱 / {progress.未上架托数}托（点击查看明细）
+            </div>
+          ) : null}
+          {work.boxNo ? (
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 12,
+                color: token.colorTextSecondary,
+              }}
+            >
+              当前箱号：{work.boxNo}
+            </div>
+          ) : null}
+        </div>
+
+        <div data-anno="pda-putaway-pallets" style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+          {order.托明细.map(renderPalletCard)}
+        </div>
+
+        {(showReset || focusReady) && (
+          <div data-anno="pda-putaway-bottom">
+            <PdaBottomBar>
+            {showReset ? (
+              <Button
+                style={{
+                  ...PDA_PRIMARY_BUTTON_STYLE,
+                  color: token.colorPrimary,
+                  borderColor: token.colorPrimary,
+                }}
+                onClick={handleReset}
+              >
+                重置
+              </Button>
+            ) : null}
+            {focusReady && focusPallet ? (
+              <Button
+                type="primary"
+                style={PDA_PRIMARY_BUTTON_STYLE}
+                onClick={() => handleConfirm(focusPallet)}
+              >
+                确认上架
+              </Button>
+            ) : null}
+          </PdaBottomBar>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div
+      data-anno="pda-putaway-entry"
       style={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         background: token.colorBgLayout,
-        borderLeft: `1px solid ${token.colorBorder}`,
-        borderRight: `1px solid ${token.colorBorder}`,
       }}
     >
       <PdaNavBar title="上架" />
@@ -153,115 +458,37 @@ export function PutawayPage() {
         <ScanInput placeholder="请扫描箱号" onScan={handleScan} />
       </div>
 
-      {!order || !pallet ? (
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: 12,
-            ...panelStyle,
-          }}
-        >
-          <Empty description="请扫描箱号开始上架" />
-        </div>
-      ) : (
-        <>
-          <div
-            style={{
-              flexShrink: 0,
-              margin: 12,
-              marginBottom: 0,
-              padding: '12px 16px',
-              ...panelStyle,
-            }}
-          >
-            <div>
-              运单号：{order.运单号}　作业单号：{order.作业单号}
-            </div>
-            <div style={{ marginTop: 8 }}>作业类型：{order.作业类型}</div>
-            {progress ? (
-              <div style={{ marginTop: 8, color: token.colorTextSecondary }}>
-                已上架：{progress.已上架箱数}箱 / {progress.已上架托数}托　
-                未上架：{progress.未上架箱数}箱 / {progress.未上架托数}托
-              </div>
-            ) : null}
-            <div
-              style={{
-                marginTop: 8,
-                fontSize: 12,
-                color: token.colorTextSecondary,
-              }}
-            >
-              当前箱号：{context?.boxNo}
-            </div>
+      <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+        {pendingOrders.length === 0 ? (
+          <div style={{ ...panelStyle, padding: 24 }}>
+            <Empty description="暂无待上架任务" />
           </div>
-
-          <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
+        ) : (
+          pendingOrders.map((item) => (
             <Card
+              key={item.作业单号}
               size="small"
-              style={{
-                ...panelStyle,
-                border: `1px solid ${token.colorPrimary}`,
-              }}
+              hoverable
+              style={{ marginBottom: 8, ...panelStyle }}
+              onClick={() => handleOpenFromList(item.作业单号)}
             >
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                托号 {pallet.托号}
+                {item.作业单号}
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: 8,
-                }}
-              >
-                <span style={{ color: token.colorTextSecondary }}>
-                  箱号 {pallet.首箱号}...({pallet.件数}箱)
-                </span>
-                {locationLocked ? (
-                  <span style={{ color: token.colorTextSecondary }}>
-                    {effectiveLocation}
-                    （自动带出）
-                  </span>
-                ) : (
-                  <LocationPicker
-                    value={effectiveLocation}
-                    onChange={setDraftLocation}
-                  />
-                )}
+              <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
+                运单号：{formatWaybillNos(item)}
               </div>
+              <div style={{ color: token.colorTextSecondary, marginBottom: 8 }}>
+                托号 {item.托号}　{item.件数}件
+              </div>
+              <div style={{ color: token.colorTextSecondary, marginBottom: 8 }}>
+                初始库位：-
+              </div>
+              <Tag color="blue">{item.状态}</Tag>
             </Card>
-          </div>
-        </>
-      )}
-
-      {(showReset || showConfirm) && (
-        <PdaBottomBar>
-          {showReset ? (
-            <Button
-              style={{
-                ...PDA_PRIMARY_BUTTON_STYLE,
-                color: token.colorPrimary,
-                borderColor: token.colorPrimary,
-              }}
-              onClick={handleReset}
-            >
-              重置
-            </Button>
-          ) : null}
-          {showConfirm ? (
-            <Button
-              type="primary"
-              style={PDA_PRIMARY_BUTTON_STYLE}
-              onClick={handleConfirm}
-            >
-              确认上架
-            </Button>
-          ) : null}
-        </PdaBottomBar>
-      )}
+          ))
+        )}
+      </div>
     </div>
   )
 }

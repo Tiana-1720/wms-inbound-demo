@@ -12,6 +12,7 @@ import { LoadPlanListPage } from '@/pages/pda/load/LoadPlanListPage'
 import { LoadWorkPage } from '@/pages/pda/load/LoadWorkPage'
 import { PutawayPage } from '@/pages/pda/putaway/PutawayPage'
 import { SortingPage } from '@/pages/pda/sorting/SortingPage'
+import { SortingConfigPage } from '@/pages/settings/SortingConfigPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
 import { TransferPlanCreatePage } from '@/pages/transfer-plan/TransferPlanCreatePage'
 import { TransferPlanDetailPage } from '@/pages/transfer-plan/TransferPlanDetailPage'
@@ -68,6 +69,8 @@ export function AppRouter() {
           path="order/TransferPlan/:id"
           element={<TransferPlanDetailPage />}
         />
+
+        <Route path="settings/sorting-config" element={<SortingConfigPage />} />
 
         <Route
           path="orders/transfer-plans"

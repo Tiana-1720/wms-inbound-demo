@@ -12,15 +12,19 @@ function makePallet(
   托号: string,
   from: number,
   count: number,
+  运单号: string,
   上架状态: PutawayPallet['上架状态'] = '待上架',
   目标库位: string | null = null,
 ): PutawayPallet {
   const 箱号列表 = palletBoxes(from, count)
+  const 箱运单 = Object.fromEntries(箱号列表.map((no) => [no, 运单号]))
   return {
     托号,
     件数: count,
     首箱号: 箱号列表[0]!,
     箱号列表,
+    箱运单,
+    运单号列表: [运单号],
     上架状态,
     目标库位,
   }
@@ -28,63 +32,73 @@ function makePallet(
 
 const multiPalletOrder: PutawayOrder = {
   作业单号: 'TK2601010001',
-  运单号: 'DSL26010128343',
+  运单列表: [{ 运单号: 'DSL26010128343', 件数: 350, 历史上架库位: 'BH-A-01' }],
   作业类型: '收货上架',
   件数: 350,
   托数: 8,
   状态: '待上架',
   托号: 'PL25010100001',
   初始库位: null,
-  历史上架库位: 'BH-A-01',
   托明细: [
-    makePallet('PL25010100001', 1, 30),
-    makePallet('PL25010100002', 31, 45),
-    makePallet('PL25010100003', 76, 40),
-    makePallet('PL25010100004', 116, 50),
-    makePallet('PL25010100005', 166, 45),
-    makePallet('PL25010100006', 211, 40),
-    makePallet('PL25010100007', 251, 50),
-    makePallet('PL25010100008', 301, 50),
+    makePallet('PL25010100001', 1, 30, 'DSL26010128343'),
+    makePallet('PL25010100002', 31, 45, 'DSL26010128343'),
+    makePallet('PL25010100003', 76, 40, 'DSL26010128343'),
+    makePallet('PL25010100004', 116, 50, 'DSL26010128343'),
+    makePallet('PL25010100005', 166, 45, 'DSL26010128343'),
+    makePallet('PL25010100006', 211, 40, 'DSL26010128343'),
+    makePallet('PL25010100007', 251, 50, 'DSL26010128343'),
+    makePallet('PL25010100008', 301, 50, 'DSL26010128343'),
   ],
-}
-
-const pendingSmall: PutawayOrder = {
-  作业单号: 'TK2601010003',
-  运单号: 'DSL26010128302',
-  作业类型: '收货上架',
-  件数: 8,
-  托数: 1,
-  状态: '待上架',
-  托号: 'PL25010100011',
-  初始库位: null,
-  托明细: [makePallet('PL25010100011', 381, 8)],
 }
 
 const completedOrder: PutawayOrder = {
   作业单号: 'TK2601010002',
-  运单号: 'DSL26010128301',
+  运单列表: [{ 运单号: 'DSL26010128301', 件数: 30 }],
   作业类型: '收货上架',
   件数: 30,
   托数: 1,
   状态: '已完成',
   托号: 'PL25010100010',
   初始库位: null,
-  托明细: [makePallet('PL25010100010', 351, 30, '已上架', 'BH-B-01')],
+  托明细: [
+    makePallet('PL25010100010', 351, 30, 'DSL26010128301', '已上架', 'BH-B-01'),
+  ],
 }
 
-const putawayOrders: PutawayOrder[] = [
-  multiPalletOrder,
-  pendingSmall,
-  completedOrder,
-]
+const putawayOrders: PutawayOrder[] = [multiPalletOrder, completedOrder]
 
 const boxIndex = new Map<string, PutawayOrder>()
-for (const order of putawayOrders) {
-  for (const pallet of order.托明细) {
-    for (const no of pallet.箱号列表) {
-      boxIndex.set(no, order)
+
+function rebuildBoxIndex() {
+  boxIndex.clear()
+  for (const order of putawayOrders) {
+    for (const pallet of order.托明细) {
+      for (const no of pallet.箱号列表) {
+        boxIndex.set(no, order)
+      }
     }
   }
+}
+
+rebuildBoxIndex()
+
+export function addPutawayOrder(order: PutawayOrder) {
+  putawayOrders.push(order)
+  rebuildBoxIndex()
+}
+
+export function hasPutawayForWaybill(运单号: string) {
+  return putawayOrders.some((order) =>
+    order.运单列表.some((line) => line.运单号 === 运单号),
+  )
+}
+
+export function hasPutawayForMixedPallet(托号: string) {
+  return putawayOrders.some(
+    (order) =>
+      order.运单列表.length > 1 &&
+      order.托明细.some((pallet) => pallet.托号 === 托号),
+  )
 }
 
 export function listPendingPutawayOrders() {
@@ -149,6 +163,11 @@ export function confirmPutawayPallet(
   return order
 }
 
-export function listPutawayOrders() {
-  return putawayOrders
+export function getPutawayWorkContext(jobNo: string) {
+  const order = getPutawayOrder(jobNo)
+  if (!order || order.状态 !== '待上架') return null
+  const pallet =
+    order.托明细.find((item) => item.上架状态 === '待上架') ?? null
+  if (!pallet) return null
+  return { order, pallet, boxNo: pallet.首箱号 }
 }

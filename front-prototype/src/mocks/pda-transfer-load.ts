@@ -1,7 +1,13 @@
 import type {
+  TransferLoadDriverInfo,
   TransferLoadLine,
   TransferLoadPlan,
 } from '@/domain/pda-transfer-load/types'
+import { TRANSFER_PLAN_LOADABLE_STATUSES } from '@/domain/transfer-plan/constants'
+import {
+  isWaybillLoadable,
+  occupyWaybills,
+} from '@/domain/pda-transfer-load/inventory'
 
 export type LoadableWaybill = {
   运单号: string
@@ -63,6 +69,7 @@ const plans: TransferLoadPlan[] = [
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '待出库',
+    出库单状态: '未生成',
     汇总箱数: 0,
     汇总重量: 0,
     汇总体积: 0,
@@ -73,6 +80,7 @@ const plans: TransferLoadPlan[] = [
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '已出库',
+    出库单状态: '已出库',
     汇总箱数: 60,
     汇总重量: 243.5,
     汇总体积: 2.35,
@@ -93,9 +101,45 @@ const plans: TransferLoadPlan[] = [
       },
     ],
   },
+  {
+    调拨计划单号: 'AT26010100003',
+    调出仓库: 'NC-LS-01',
+    调入仓库: 'DS-JH-01',
+    状态: '已复核',
+    出库单状态: '已复核',
+    汇总箱数: 30,
+    汇总重量: 125.5,
+    汇总体积: 1.25,
+    明细: [
+      {
+        运单号: 'DSL26010128343',
+        客户代码: 'CUST001',
+        箱数: 30,
+        重量: 125.5,
+        体积: 1.25,
+      },
+    ],
+  },
 ]
 
+// 已装车计划：初始化占用状态
+for (const plan of plans) {
+  if (plan.状态 === '已复核' || plan.状态 === '已出库') {
+    occupyWaybills(
+      plan.调拨计划单号,
+      plan.明细.map((item) => item.运单号),
+    )
+  }
+}
+
 const scanSessions = new Map<string, TransferLoadLine[]>()
+const driverSessions = new Map<string, TransferLoadDriverInfo>()
+
+const emptyDriver = (): TransferLoadDriverInfo => ({
+  司机: '',
+  电话: '',
+  车牌号: '',
+})
 
 function recalcSummary(plan: TransferLoadPlan) {
   const lines = scanSessions.get(plan.调拨计划单号) ?? plan.明细
@@ -106,7 +150,11 @@ function recalcSummary(plan: TransferLoadPlan) {
 }
 
 export function listPendingLoadPlans() {
-  return plans.filter((item) => item.状态 === '待出库')
+  return plans.filter(
+    (item) =>
+      TRANSFER_PLAN_LOADABLE_STATUSES.includes(item.状态) &&
+      item.出库单状态 !== '已出库',
+  )
 }
 
 export function getLoadPlan(planNo: string) {
@@ -131,6 +179,7 @@ export function resetLoadSession(planNo: string) {
 export type LoadScanLookup =
   | { kind: 'missing' }
   | { kind: 'notOnShelf' }
+  | { kind: 'occupied' }
   | { kind: 'destMismatch' }
   | { kind: 'duplicate' }
   | { kind: 'hit'; line: TransferLoadLine }
@@ -149,6 +198,9 @@ export function scanLoadBox(
   if (!waybill) return { kind: 'missing' }
 
   if (!waybill.已上架) return { kind: 'notOnShelf' }
+  if (!isWaybillLoadable(waybill.运单号, planNo)) {
+    return { kind: 'occupied' }
+  }
   if (waybill.目的仓 !== plan.调入仓库) return { kind: 'destMismatch' }
 
   const session = getLoadSession(planNo)
@@ -168,6 +220,22 @@ export function scanLoadBox(
   return { kind: 'hit', line }
 }
 
+export function getLoadDriverInfo(planNo: string): TransferLoadDriverInfo {
+  return driverSessions.get(planNo) ?? emptyDriver()
+}
+
+export function setLoadDriverInfo(
+  planNo: string,
+  patch: Partial<TransferLoadDriverInfo>,
+) {
+  const current = getLoadDriverInfo(planNo)
+  driverSessions.set(planNo, { ...current, ...patch })
+}
+
+export function isLoadDriverReady(info: TransferLoadDriverInfo) {
+  return Boolean(info.司机.trim() && info.电话.trim() && info.车牌号.trim())
+}
+
 export function removeLoadLine(planNo: string, 运单号: string) {
   const session = getLoadSession(planNo)
   const next = session.filter((item) => item.运单号 !== 运单号)
@@ -178,8 +246,32 @@ export function removeLoadLine(planNo: string, 运单号: string) {
 
 export function confirmDispatch(planNo: string) {
   const plan = getLoadPlan(planNo)
-  if (!plan || plan.状态 !== '待出库') return false
-  plan.状态 = '已出库'
+  if (
+    !plan ||
+    !TRANSFER_PLAN_LOADABLE_STATUSES.includes(plan.状态) ||
+    plan.出库单状态 === '已出库'
+  ) {
+    return false
+  }
+
+  if (!isLoadDriverReady(getLoadDriverInfo(planNo))) return false
+
+  const session = getLoadSession(planNo)
+  if (session.length === 0) return false
+
+  const merged = new Map(plan.明细.map((item) => [item.运单号, item]))
+  for (const line of session) {
+    merged.set(line.运单号, line)
+  }
+  plan.明细 = [...merged.values()]
+  plan.状态 = '已复核'
+  plan.出库单状态 = '已复核'
+  occupyWaybills(
+    planNo,
+    plan.明细.map((item) => item.运单号),
+  )
+  recalcSummary(plan)
+  scanSessions.set(planNo, [...plan.明细])
   return true
 }
 

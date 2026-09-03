@@ -92,6 +92,12 @@ export function isBoxAlreadyBound(boxNo: string) {
   return waybills.some((waybill) => waybill.已绑托箱号.includes(boxNo))
 }
 
+export function isWaybillFullyBound(运单号: string) {
+  const waybill = waybills.find((item) => item.运单号 === 运单号)
+  if (!waybill) return false
+  return waybill.预报箱号.every((no) => waybill.已绑托箱号.includes(no))
+}
+
 export function markPalletBound(boxNos: string[]) {
   for (const boxNo of boxNos) {
     const waybill = boxIndex.get(boxNo)
@@ -99,10 +105,7 @@ export function markPalletBound(boxNos: string[]) {
     if (!waybill.已绑托箱号.includes(boxNo)) {
       waybill.已绑托箱号.push(boxNo)
     }
-    const allBound = waybill.预报箱号.every((no) =>
-      waybill.已绑托箱号.includes(no),
-    )
-    if (allBound) {
+    if (isWaybillFullyBound(waybill.运单号)) {
       waybill.状态 = '已绑托'
     }
   }

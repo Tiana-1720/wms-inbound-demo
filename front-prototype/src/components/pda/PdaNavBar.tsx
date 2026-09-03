@@ -4,9 +4,10 @@ import { useNavigate } from 'react-router-dom'
 
 type PdaNavBarProps = {
   title: string
+  onBack?: () => void
 }
 
-export function PdaNavBar({ title }: PdaNavBarProps) {
+export function PdaNavBar({ title, onBack }: PdaNavBarProps) {
   const navigate = useNavigate()
   const { token } = theme.useToken()
 
@@ -26,7 +27,7 @@ export function PdaNavBar({ title }: PdaNavBarProps) {
         type="text"
         aria-label="返回"
         icon={<LeftOutlined />}
-        onClick={() => navigate(-1)}
+        onClick={() => (onBack ? onBack() : navigate(-1))}
         style={{ height: 44, width: 44 }}
       />
       <div

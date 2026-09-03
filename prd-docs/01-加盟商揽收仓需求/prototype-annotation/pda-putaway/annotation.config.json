@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "title": "PDA 上架 · 原型标注",
+  "scope": "pda-putaway",
+  "sourceBase": ".",
+  "runtime": {
+    "zIndexBase": 2147480000,
+    "initialMode": "annotate"
+  },
+  "mermaid": {
+    "enabled": true,
+    "src": "",
+    "options": {}
+  },
+  "sourceRequirements": [
+    {
+      "id": "REQ-PDA-PUT-001",
+      "source": "../04-06-上架_Demo.md#子页 A",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-002",
+      "source": "../04-06-上架_Demo.md#子页 B",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-003",
+      "source": "../04-06-上架_Demo.md#子页 C",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-004",
+      "source": "../03-02-加盟商揽收仓PDA主PRD.md#§十一 上架",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-005",
+      "source": "../02-03-上架单字段清单.md",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-A1",
+      "source": "../04-06-上架_Demo.md#B.6 跨库位不一致提醒",
+      "page": "/pda/inbound/putaway"
+    },
+    {
+      "id": "REQ-PDA-PUT-MOCK",
+      "source": "../04-06-上架_Demo.md#Mock 数据规格",
+      "page": "/pda/inbound/putaway"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "1",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "入口扫描与待上架列表",
+      "order": 1,
+      "target": { "selector": "[data-anno='pda-putaway-entry']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "1",
+      "sourceRefs": ["REQ-PDA-PUT-001", "REQ-PDA-PUT-004"]
+    },
+    {
+      "id": "2",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "作业页头信息与进度",
+      "order": 2,
+      "target": { "selector": "[data-anno='pda-putaway-work-header']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "2",
+      "sourceRefs": ["REQ-PDA-PUT-002", "REQ-PDA-PUT-005"]
+    },
+    {
+      "id": "3",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "托卡片与库位选择",
+      "order": 3,
+      "target": { "selector": "[data-anno='pda-putaway-pallets']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "3",
+      "sourceRefs": ["REQ-PDA-PUT-002", "REQ-PDA-PUT-004", "REQ-PDA-PUT-005"]
+    },
+    {
+      "id": "4",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "底部重置与确认上架",
+      "order": 4,
+      "target": { "selector": "[data-anno='pda-putaway-bottom']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "4",
+      "sourceRefs": ["REQ-PDA-PUT-002", "REQ-PDA-PUT-004", "REQ-PDA-PUT-A1"]
+    },
+    {
+      "id": "5",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "上架明细子页",
+      "order": 5,
+      "target": { "selector": "[data-anno='pda-putaway-detail']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "5",
+      "sourceRefs": ["REQ-PDA-PUT-003"]
+    },
+    {
+      "id": "A1",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "原型 Mock · 可扫描箱号",
+      "order": 6,
+      "target": { "selector": "[data-anno='pda-putaway-entry']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "A1",
+      "sourceRefs": ["REQ-PDA-PUT-MOCK"]
+    }
+  ]
+}

@@ -1,6 +1,8 @@
-/** 沿用现网三态 + 预留已取消（主 PRD §5.2；本期无取消入口） */
+/** 沿用现网六态（主 PRD §5.2；计划调拨走下架→复核，空单调拨装车直达已复核） */
 export const TRANSFER_PLAN_STATUSES = [
   '待出库',
+  '已下架',
+  '已复核',
   '已出库',
   '已完成',
   '已取消',
@@ -16,10 +18,18 @@ export type TransferPlanTabKey = (typeof TRANSFER_PLAN_TAB_KEYS)[number]
 /** 状态 Tag 配色（Demo PRD §1.5） */
 export const TRANSFER_PLAN_STATUS_COLOR: Record<TransferPlanStatus, string> = {
   待出库: 'blue',
-  已出库: 'orange',
+  已下架: 'cyan',
+  已复核: 'orange',
+  已出库: 'gold',
   已完成: 'green',
   已取消: 'default',
 }
+
+/** 空单调拨 PDA 装车可进入的计划状态 */
+export const TRANSFER_PLAN_LOADABLE_STATUSES: TransferPlanStatus[] = [
+  '待出库',
+  '已复核',
+]
 
 export const WAREHOUSE_TYPE_FRANCHISE = '加盟揽收仓' as const
 

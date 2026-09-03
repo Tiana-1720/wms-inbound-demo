@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 
 import { PdaNavBar } from '@/components/pda/PdaNavBar'
 import { getTransferLoadWorkPath } from '@/config/routes'
+import { TRANSFER_PLAN_STATUS_COLOR } from '@/domain/transfer-plan/constants'
 import { listPendingLoadPlans } from '@/mocks/pda-transfer-load'
 
 export function LoadPlanListPage() {
@@ -19,6 +20,7 @@ export function LoadPlanListPage() {
 
   return (
     <div
+      data-anno="pda-load-list-page"
       style={{
         height: '100%',
         display: 'flex',
@@ -33,7 +35,7 @@ export function LoadPlanListPage() {
       <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
         {plans.length === 0 ? (
           <div style={{ ...panelStyle, padding: 24 }}>
-            <Empty description="暂无待出库调拨计划" />
+            <Empty description="暂无可装车调拨计划" />
           </div>
         ) : (
           plans.map((plan) => (
@@ -53,7 +55,12 @@ export function LoadPlanListPage() {
               <div style={{ color: token.colorTextSecondary, marginBottom: 8 }}>
                 合计：{plan.汇总箱数}箱
               </div>
-              <Tag color="blue">待出库</Tag>
+              <Tag color={TRANSFER_PLAN_STATUS_COLOR[plan.状态]}>{plan.状态}</Tag>
+              {plan.出库单状态 !== '未生成' ? (
+                <Tag color={plan.出库单状态 === '已复核' ? 'orange' : 'default'}>
+                  出库单{plan.出库单状态}
+                </Tag>
+              ) : null}
             </Card>
           ))
         )}

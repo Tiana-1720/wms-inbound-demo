@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "title": "PDA 装车 · 原型标注",
+  "scope": "pda-load",
+  "sourceBase": ".",
+  "runtime": {
+    "zIndexBase": 2147480000,
+    "initialMode": "annotate"
+  },
+  "mermaid": {
+    "enabled": true,
+    "src": "",
+    "options": {}
+  },
+  "sourceRequirements": [
+    {
+      "id": "REQ-PDA-LOAD-LIST-001",
+      "source": "../04-07-装车_Demo.md#§2.2 装车计划列表卡片",
+      "page": "/pda/transfer/load"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-001",
+      "source": "../04-07-装车_Demo.md#§2 调拨头信息区",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-002",
+      "source": "../04-07-装车_Demo.md#§3 扫描区",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-003",
+      "source": "../04-07-装车_Demo.md#§4–§5 明细与汇总",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-004",
+      "source": "../04-07-装车_Demo.md#§6 底部固定操作栏",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-005",
+      "source": "../04-07-装车_Demo.md#§2.1 司机信息区",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-006",
+      "source": "../03-02-加盟商揽收仓PDA主PRD.md#§十三 空单调拨装车",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-WORK-007",
+      "source": "../02-02-调拨计划单字段清单.md",
+      "page": "/pda/transfer/load/:planNo"
+    },
+    {
+      "id": "REQ-PDA-LOAD-MOCK",
+      "source": "../04-07-装车_Demo.md#§8 Mock 数据规格",
+      "page": "/pda/transfer/load/:planNo"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "1",
+      "page": "/pda/transfer/load",
+      "moduleName": "装车计划列表",
+      "order": 1,
+      "target": { "selector": "[data-anno='pda-load-list-page']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "1",
+      "sourceRefs": ["REQ-PDA-LOAD-LIST-001", "REQ-PDA-LOAD-WORK-006"]
+    },
+    {
+      "id": "2",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "调拨头信息区",
+      "order": 2,
+      "target": { "selector": "[data-anno='pda-load-work-header']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "2",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-001", "REQ-PDA-LOAD-WORK-007"]
+    },
+    {
+      "id": "3",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "扫描区与校验",
+      "order": 3,
+      "target": { "selector": "[data-anno='pda-load-work-scan']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "3",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-002", "REQ-PDA-LOAD-WORK-006"]
+    },
+    {
+      "id": "4",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "已扫明细与汇总",
+      "order": 4,
+      "target": { "selector": "[data-anno='pda-load-work-content']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "4",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-003", "REQ-PDA-LOAD-WORK-007"]
+    },
+    {
+      "id": "5",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "底部操作栏与装车确认",
+      "order": 5,
+      "target": { "selector": "[data-anno='pda-load-work-bottom']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "5",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-004", "REQ-PDA-LOAD-WORK-006"]
+    },
+    {
+      "id": "6",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "司机信息弹窗",
+      "order": 6,
+      "target": { "selector": "[data-anno='pda-load-driver-modal']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "6",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-005", "REQ-PDA-LOAD-WORK-004"]
+    },
+    {
+      "id": "A1",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "原型 Mock · 可扫描箱号",
+      "order": 7,
+      "target": { "selector": "[data-anno='pda-load-work-scan']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "A1",
+      "sourceRefs": ["REQ-PDA-LOAD-MOCK"]
+    }
+  ]
+}
