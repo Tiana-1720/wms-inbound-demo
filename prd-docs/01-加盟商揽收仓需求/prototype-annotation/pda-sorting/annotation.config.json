@@ -56,6 +56,16 @@
   ],
   "annotations": [
     {
+      "id": "0",
+      "page": "/pda/inbound/sorting",
+      "moduleName": "分货页总览",
+      "order": 0,
+      "target": { "selector": "[data-anno='pda-sorting-page']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-sorting.md",
+      "blockId": "0",
+      "sourceRefs": ["REQ-PDA-SORT-003"]
+    },
+    {
       "id": "1",
       "page": "/pda/inbound/sorting",
       "moduleName": "作业托数弹窗",

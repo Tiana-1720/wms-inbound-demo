@@ -1,3 +1,29 @@
+<!-- anno:start id=0 page=/pda/transfer/load/:planNo target=pda-load-work-page -->
+## 需求描述：【装车作业页总览】
+
+> 来源：04-07-装车_Demo.md §1；03-02-加盟商揽收仓PDA主PRD.md §十三
+
+### 业务定义
+
+- 路径 `/pda/transfer/load/{调拨计划单号}`；仅**空单调拨**（调出仓=加盟揽收仓）。
+- 扫描已上架库位库存装车；点「装车」生成/追加出库单（**已复核**）并**占用**库存；**PC 确认出库**后实扣。
+
+### 子模块标注
+
+| 角标 | 模块 | 挂载点 |
+| --- | --- | --- |
+| 2 | 调拨头信息 | `pda-load-work-header` |
+| 3 | 扫描区与校验 | `pda-load-work-scan` |
+| 4 | 已扫明细与汇总 | `pda-load-work-content` |
+| 5 | 底部操作栏 | `pda-load-work-bottom` |
+| 6 | 司机信息弹窗 | `pda-load-driver-modal`（弹窗打开时） |
+| A1 | Mock 可扫描箱号 | `pda-load-work-scan` |
+
+### 研发备注
+
+- 挂载点：`[data-anno='pda-load-work-page']`。
+<!-- anno:end id=0 -->
+
 <!-- anno:start id=1 page=/pda/transfer/load target=pda-load-list-page -->
 ## 需求描述：【装车计划列表】
 

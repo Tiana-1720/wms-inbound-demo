@@ -685,6 +685,23 @@ async function loadConfig() {
   return response.json();
 }
 
+function installSpaNavigationListeners() {
+  const notify = () => scheduleMeasure();
+  const wrapHistory = (method) => {
+    const original = history[method];
+    if (typeof original !== 'function') return;
+    history[method] = function historyNavigationWrapper(...args) {
+      const result = original.apply(this, args);
+      notify();
+      return result;
+    };
+  };
+  wrapHistory('pushState');
+  wrapHistory('replaceState');
+  window.addEventListener('popstate', notify);
+  window.addEventListener('hashchange', notify);
+}
+
 async function boot() {
   try {
     VPA_STATE.config = await loadConfig();
@@ -692,11 +709,10 @@ async function boot() {
     await hydrateMarkdownAnnotations();
     ensureRoot();
     renderToolbar();
+    installSpaNavigationListeners();
     measureBadges();
     window.addEventListener('resize', scheduleMeasure);
     window.addEventListener('scroll', scheduleMeasure, true);
-    window.addEventListener('hashchange', scheduleMeasure);
-    window.addEventListener('popstate', scheduleMeasure);
     new MutationObserver((mutations) => {
       const hasBusinessMutation = mutations.some((mutation) => {
         const target = mutation.target instanceof Element ? mutation.target : mutation.target.parentElement;

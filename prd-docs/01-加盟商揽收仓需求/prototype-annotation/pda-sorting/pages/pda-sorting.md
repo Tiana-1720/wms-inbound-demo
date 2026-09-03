@@ -1,3 +1,30 @@
+<!-- anno:start id=0 page=/pda/inbound/sorting target=pda-sorting-page -->
+## 需求描述：【分货页总览】
+
+> 来源：04-05-分货_Demo.md §1；03-02-加盟商揽收仓PDA主PRD.md §十二
+
+### 业务定义
+
+- 路径 `/pda/inbound/sorting`；菜单 `PDA → 入库管理 → 分货`。
+- **独立新页面**，不沿用现网绑托页；进入后先选作业托数 N，再进入扫描分货主界面。
+- 分货参数 **M/P** 由管理后台配置；未配置则阻断作业（R48）。
+
+### 子模块标注
+
+| 角标 | 模块 | 挂载点 |
+| --- | --- | --- |
+| 1 | 作业托数弹窗 | `pda-sorting-setup-modal`（弹窗打开时） |
+| 2 | 扫描区与校验 | `pda-sorting-scan` |
+| 3 | 运单信息区 | `pda-sorting-waybill` |
+| 4 | 托列表与确认绑托 | `pda-sorting-pallets` |
+| 5 | 落托确认弹窗 | `pda-sorting-drop-confirm`（弹窗打开时） |
+| A1 | Mock 可扫描箱号 | `pda-sorting-scan` |
+
+### 研发备注
+
+- 挂载点：`[data-anno='pda-sorting-page']`（开始作业后主界面根节点）。
+<!-- anno:end id=0 -->
+
 <!-- anno:start id=1 page=/pda/inbound/sorting target=pda-sorting-setup-modal -->
 ## 需求描述：【作业托数弹窗】
 

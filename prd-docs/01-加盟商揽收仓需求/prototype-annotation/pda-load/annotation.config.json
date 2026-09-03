@@ -61,6 +61,17 @@
   ],
   "annotations": [
     {
+      "id": "0",
+      "page": "/pda/transfer/load",
+      "routeMatcher": "^/pda/transfer/load/[^/]+$",
+      "moduleName": "装车作业页总览",
+      "order": 0,
+      "target": { "selector": "[data-anno='pda-load-work-page']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-load.md",
+      "blockId": "0",
+      "sourceRefs": ["REQ-PDA-LOAD-WORK-006"]
+    },
+    {
       "id": "1",
       "page": "/pda/transfer/load",
       "moduleName": "装车计划列表",

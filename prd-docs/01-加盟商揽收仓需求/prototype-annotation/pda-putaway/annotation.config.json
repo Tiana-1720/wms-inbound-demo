@@ -51,6 +51,16 @@
   ],
   "annotations": [
     {
+      "id": "0",
+      "page": "/pda/inbound/putaway",
+      "moduleName": "上架作业页总览",
+      "order": 0,
+      "target": { "selector": "[data-anno='pda-putaway-work']", "fallbackSelectors": [] },
+      "markdownFile": "pages/pda-putaway.md",
+      "blockId": "0",
+      "sourceRefs": ["REQ-PDA-PUT-004"]
+    },
+    {
       "id": "1",
       "page": "/pda/inbound/putaway",
       "moduleName": "入口扫描与待上架列表",

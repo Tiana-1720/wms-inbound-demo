@@ -1,3 +1,27 @@
+<!-- anno:start id=0 page=/pda/inbound/putaway target=pda-putaway-work -->
+## 需求描述：【上架作业页总览】
+
+> 来源：04-06-上架_Demo.md 子页 B；03-02-加盟商揽收仓PDA主PRD.md §十一
+
+### 业务定义
+
+- 子页 B：扫描箱号或从待上架列表进入后展示；按托选择备货库位并确认上架。
+- 上架完成驱动收货订单→**已上架**；**预报库存 − / 库位库存 +**。
+
+### 子模块标注
+
+| 角标 | 模块 | 挂载点 |
+| --- | --- | --- |
+| 2 | 作业页头信息与进度 | `pda-putaway-work-header` |
+| 3 | 托卡片与库位选择 | `pda-putaway-pallets` |
+| 4 | 底部重置与确认上架 | `pda-putaway-bottom` |
+| 5 | 上架明细子页 | `pda-putaway-detail` |
+
+### 研发备注
+
+- 挂载点：`[data-anno='pda-putaway-work']`（进入作业子页后可见；入口子页见标注 1）。
+<!-- anno:end id=0 -->
+
 <!-- anno:start id=1 page=/pda/inbound/putaway target=pda-putaway-entry -->
 ## 需求描述：【入口扫描与待上架列表】
 
