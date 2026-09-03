@@ -105,26 +105,18 @@ const plans: TransferLoadPlan[] = [
     调拨计划单号: 'AT26010100003',
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
-    状态: '已复核',
-    出库单状态: '已复核',
-    汇总箱数: 30,
-    汇总重量: 125.5,
-    汇总体积: 1.25,
-    明细: [
-      {
-        运单号: 'DSL26010128343',
-        客户代码: 'CUST001',
-        箱数: 30,
-        重量: 125.5,
-        体积: 1.25,
-      },
-    ],
+    状态: '待出库',
+    出库单状态: '未生成',
+    汇总箱数: 0,
+    汇总重量: 0,
+    汇总体积: 0,
+    明细: [],
   },
 ]
 
-// 已装车计划：初始化占用状态
+// 已装车/已出库计划：初始化占用状态
 for (const plan of plans) {
-  if (plan.状态 === '已复核' || plan.状态 === '已出库') {
+  if (plan.状态 === '已出库' || plan.出库单状态 === '已复核') {
     occupyWaybills(
       plan.调拨计划单号,
       plan.明细.map((item) => item.运单号),
@@ -152,7 +144,8 @@ function recalcSummary(plan: TransferLoadPlan) {
 export function listPendingLoadPlans() {
   return plans.filter(
     (item) =>
-      TRANSFER_PLAN_LOADABLE_STATUSES.includes(item.状态) &&
+      item.状态 === '待出库' &&
+      item.出库单状态 !== '已复核' &&
       item.出库单状态 !== '已出库',
   )
 }
@@ -264,7 +257,7 @@ export function confirmDispatch(planNo: string) {
     merged.set(line.运单号, line)
   }
   plan.明细 = [...merged.values()]
-  plan.状态 = '已复核'
+  plan.状态 = '待出库'
   plan.出库单状态 = '已复核'
   occupyWaybills(
     planNo,

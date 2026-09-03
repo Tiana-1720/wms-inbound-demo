@@ -25,11 +25,8 @@ export const TRANSFER_PLAN_STATUS_COLOR: Record<TransferPlanStatus, string> = {
   已取消: 'default',
 }
 
-/** 空单调拨 PDA 装车可进入的计划状态 */
-export const TRANSFER_PLAN_LOADABLE_STATUSES: TransferPlanStatus[] = [
-  '待出库',
-  '已复核',
-]
+/** 空单调拨 PDA 装车可进入的作业状态（调拨计划须仍为待出库） */
+export const TRANSFER_PLAN_LOADABLE_STATUSES: TransferPlanStatus[] = ['待出库']
 
 export const WAREHOUSE_TYPE_FRANCHISE = '加盟揽收仓' as const
 
