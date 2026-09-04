@@ -101,6 +101,73 @@ class CompilerTests(unittest.TestCase):
             ["preview", "annotate"],
         )
 
+    def test_display_markdown_keeps_entry_and_change_logic(self):
+        markdown = """## 需求描述：【示例】
+
+> 来源：prd.md
+
+### 业务定义（本次增量）
+
+- 仅由上游推送落单。
+
+### 页面模式
+
+- 列表只读。
+
+### 交互规则
+
+- 点击查看跳转详情。
+
+### 字段与状态
+
+| 字段 | 约束 |
+| --- | --- |
+| 运单号 | 只读 |
+
+### 研发备注
+
+- 挂载点：page-root。
+"""
+        rendered = MODULE.prepare_display_markdown(markdown, "- 管理后台 → **订单管理 → 收货订单**")
+        self.assertIn("### 页面入口", rendered)
+        self.assertIn("管理后台 → **订单管理 → 收货订单**", rendered)
+        self.assertIn("### 改动逻辑", rendered)
+        self.assertIn("仅由上游推送落单", rendered)
+        self.assertIn("### 字段与状态", rendered)
+        self.assertNotIn("### 业务定义", rendered)
+        self.assertNotIn("### 页面模式", rendered)
+        self.assertNotIn("### 交互规则", rendered)
+        self.assertNotIn("### 研发备注", rendered)
+        self.assertNotIn("列表只读", rendered)
+        self.assertNotIn("点击查看跳转详情", rendered)
+        self.assertNotIn("挂载点：page-root", rendered)
+        self.assertEqual(rendered, MODULE.prepare_display_markdown(rendered, "- 管理后台 → **订单管理 → 收货订单**"))
+
+    def test_display_markdown_falls_back_when_business_definition_missing(self):
+        rendered = MODULE.prepare_display_markdown(
+            "## 需求描述：【新增弹窗】\n\n### 页面模式\n\n- 仅新增，无编辑页。\n",
+            "- 列表 → **新增**",
+        )
+        self.assertIn("### 页面入口", rendered)
+        self.assertIn("### 改动逻辑", rendered)
+        self.assertIn("仅新增，无编辑页。", rendered)
+        self.assertNotIn("### 页面模式", rendered)
+
+    def test_compile_injects_config_page_entry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "annotation.config.json"
+            value = config("product")
+            value["pageEntry"] = "- 菜单 → **商品**"
+            value["annotations"][0]["markdown"] = "## 需求描述\n\n### 业务定义\n\n- 可查询。\n\n### 研发备注\n\n- 内部实现。"
+            write_json(path, value)
+            bundle, errors, _ = MODULE.compile_config(path)
+            self.assertEqual(errors, [])
+            markdown = bundle["annotations"][0]["markdown"]
+            self.assertEqual(bundle["annotations"][0]["pageEntry"], "- 菜单 → **商品**")
+            self.assertIn("### 页面入口", markdown)
+            self.assertIn("### 改动逻辑", markdown)
+            self.assertNotIn("### 研发备注", markdown)
+
 
 if __name__ == "__main__":
     unittest.main()

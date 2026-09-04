@@ -38,9 +38,11 @@ import {
   isBoxAlreadyBound,
   lookupSortingBox,
   markPalletBound,
+  resetSortingDemo,
 } from '@/mocks/pda-sorting'
 import {
   recordBoundPallet,
+  resetPutawaySyncState,
   syncPutawayFromBoundPallet,
 } from '@/mocks/putaway-sync'
 import {
@@ -99,7 +101,6 @@ export function SortingPage() {
     }),
     [sortingConfig],
   )
-  const waybillMap = useMemo(() => getSortingWaybillMap(), [])
 
   const [pageReady, setPageReady] = useState(false)
   const [setupOpen, setSetupOpen] = useState(true)
@@ -110,6 +111,12 @@ export function SortingPage() {
   const [loading, setLoading] = useState(false)
   const [lastWaybill, setLastWaybill] = useState<SortingWaybill | null>(null)
   const [dropConfirm, setDropConfirm] = useState<DropConfirmState | null>(null)
+  const [sortMockTick, setSortMockTick] = useState(0)
+
+  const waybillMap = useMemo(
+    () => getSortingWaybillMap(),
+    [sortMockTick],
+  )
 
   const panelStyle = {
     background: token.colorBgContainer,
@@ -147,6 +154,9 @@ export function SortingPage() {
   }
 
   const resetSession = () => {
+    resetSortingDemo()
+    resetPutawaySyncState()
+    setSortMockTick((v) => v + 1)
     setSession(createSession(slotCount))
     setPalletSeq(1)
     setLastWaybill(null)
@@ -173,6 +183,9 @@ export function SortingPage() {
       })),
     )
     const putawayOrder = syncPutawayFromBoundPallet(result.托号)
+    // 原型：绑托成功仅反馈交互，回滚分货 Mock 绑托状态，便于重复扫描演示
+    resetSortingDemo()
+    setSortMockTick((v) => v + 1)
     setSession(result.session)
     setPalletSeq(result.nextSeq)
     message.success(

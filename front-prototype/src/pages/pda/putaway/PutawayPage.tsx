@@ -2,7 +2,7 @@
  * 上架 PDA 页（04-06）：子页 A 入口 / B 作业 / C 明细。
  * 小票混托：多运单共一张上架单；扫托上任一箱进入该单，确认上架整托（含托上全部运单）。
  */
-import { App, Button, Card, Empty, Modal, Tabs, Tag, theme } from 'antd'
+import { App, Button, Card, Empty, Modal, Tabs, theme } from 'antd'
 import { useMemo, useState } from 'react'
 
 import { LocationPicker } from '@/components/pda/LocationPicker'
@@ -26,7 +26,10 @@ import {
   getPutawayWorkContext,
   listPendingPutawayOrders,
   lookupPutawayBox,
+  resetPutawayDemo,
 } from '@/mocks/putaway'
+import { resetPutawaySyncState } from '@/mocks/putaway-sync'
+import { resetSortingDemo } from '@/mocks/pda-sorting'
 
 const PUTAWAY_SCAN_ERROR = {
   missing: '箱号不存在',
@@ -133,15 +136,21 @@ export function PutawayPage() {
 
   const doConfirm = (pallet: PutawayPallet, location: string) => {
     if (!order) return
-    confirmPutawayPallet(order.作业单号, pallet.托号, location)
+    const result = confirmPutawayPallet(order.作业单号, pallet.托号, location)
+    if (!result) return
     setTick((v) => v + 1)
 
-    const updated = getPutawayOrder(order.作业单号)!
-    if (updated.状态 === '已完成') {
+    if (result.completed) {
+      // 原型：整单完成仅反馈交互，回滚上架/分货 Mock，便于重复扫描演示
+      resetPutawayDemo()
+      resetPutawaySyncState()
+      resetSortingDemo()
       message.success('上架完成')
       backToEntry()
       return
     }
+
+    const updated = result.order
     message.success('上架成功')
     const next = updated.托明细.find((item) => item.上架状态 === '待上架')
     if (next) {
@@ -185,33 +194,25 @@ export function PutawayPage() {
   const showReset = screen === 'work' && Object.keys(draftByPallet).length > 0
 
   const detailRows = useMemo(() => {
-    if (!order) return []
-    const rows: { 托号: string; 运单号: string; 箱号: string; 库位: string }[] =
-      []
-    for (const pallet of order.托明细) {
-      const loc = pallet.目标库位 ?? inheritedLocation ?? '-'
-      for (const box of pallet.箱号列表) {
-        rows.push({
-          托号: pallet.托号,
-          运单号: pallet.箱运单[box] ?? '-',
-          箱号: box,
-          库位: loc,
-        })
-      }
-    }
-    return rows
-  }, [order, inheritedLocation, tick])
+    if (!focusPallet) return []
+    const loc = focusPallet.目标库位 ?? inheritedLocation ?? '-'
+    return focusPallet.箱号列表.map((box) => ({
+      运单号: focusPallet.箱运单[box] ?? '-',
+      箱号: box,
+      库位: loc,
+    }))
+  }, [focusPallet, inheritedLocation, tick])
 
-  const filteredDetailRows = detailRows.filter((row) => {
-    const pallet = order?.托明细.find((item) => item.托号 === row.托号)
-    if (!pallet) return false
-    if (detailTab === '全部') return true
-    if (detailTab === '已上架') return pallet.上架状态 === '已上架'
-    return pallet.上架状态 === '待上架'
-  })
+  const filteredDetailRows = useMemo(() => {
+    if (!focusPallet) return []
+    if (detailTab === '全部') return detailRows
+    if (detailTab === '已上架') {
+      return focusPallet.上架状态 === '已上架' ? detailRows : []
+    }
+    return focusPallet.上架状态 === '待上架' ? detailRows : []
+  }, [detailRows, detailTab, focusPallet])
 
   const renderPalletCard = (pallet: PutawayPallet) => {
-    const isFocus = focusPallet?.托号 === pallet.托号
     const effectiveLocation = getEffectiveLocation(pallet)
     const readonlyPallet = pallet.上架状态 === '已上架'
 
@@ -219,17 +220,9 @@ export function PutawayPage() {
       <Card
         key={pallet.托号}
         size="small"
-        hoverable={!readonlyPallet}
         style={{
           marginBottom: 8,
           ...panelStyle,
-          border: isFocus
-            ? `1px solid ${token.colorPrimary}`
-            : panelStyle.border,
-        }}
-        onClick={() => {
-          if (readonlyPallet || !work) return
-          setWork({ ...work, focus托号: pallet.托号, boxNo: pallet.首箱号 })
         }}
       >
         <div style={{ fontWeight: 600, marginBottom: 8 }}>托号 {pallet.托号}</div>
@@ -276,7 +269,7 @@ export function PutawayPage() {
     )
   }
 
-  if (screen === 'detail' && order) {
+  if (screen === 'detail' && order && focusPallet) {
     return (
       <div
         data-anno="pda-putaway-detail"
@@ -288,7 +281,15 @@ export function PutawayPage() {
         }}
       >
         <PdaNavBar title="上架明细" onBack={() => setScreen('work')} />
-        <div style={{ padding: 12 }}>
+        <div
+          style={{
+            padding: '12px 12px 0',
+            fontWeight: 600,
+          }}
+        >
+          托号 {focusPallet.托号}
+        </div>
+        <div style={{ padding: 12, paddingBottom: 0 }}>
           <Tabs
             activeKey={detailTab}
             onChange={(key) => setDetailTab(key as DetailTab)}
@@ -305,11 +306,10 @@ export function PutawayPage() {
           ) : (
             filteredDetailRows.map((row) => (
               <Card
-                key={`${row.托号}-${row.运单号}-${row.箱号}`}
+                key={`${row.运单号}-${row.箱号}`}
                 size="small"
                 style={{ marginBottom: 8, ...panelStyle }}
               >
-                <div>托号 {row.托号}</div>
                 <div style={{ color: token.colorTextSecondary }}>
                   运单号 {row.运单号}
                 </div>
@@ -400,7 +400,11 @@ export function PutawayPage() {
         </div>
 
         <div data-anno="pda-putaway-pallets" style={{ flex: 1, overflow: 'auto', padding: 12 }}>
-          {order.托明细.map(renderPalletCard)}
+          {focusPallet ? (
+            renderPalletCard(focusPallet)
+          ) : (
+            <Empty description="暂无待上架托" />
+          )}
         </div>
 
         {(showReset || focusReady) && (
@@ -478,13 +482,9 @@ export function PutawayPage() {
               <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
                 运单号：{formatWaybillNos(item)}
               </div>
-              <div style={{ color: token.colorTextSecondary, marginBottom: 8 }}>
+              <div style={{ color: token.colorTextSecondary }}>
                 托号 {item.托号}　{item.件数}件
               </div>
-              <div style={{ color: token.colorTextSecondary, marginBottom: 8 }}>
-                初始库位：-
-              </div>
-              <Tag color="blue">{item.状态}</Tag>
             </Card>
           ))
         )}

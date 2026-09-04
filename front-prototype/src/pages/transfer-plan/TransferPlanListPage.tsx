@@ -69,7 +69,6 @@ export function TransferPlanListPage({
     <div data-anno="transfer-plan-list-page">
       <PageContainer title="调拨计划" ghost>
         <Tabs
-          data-anno="transfer-plan-status-tabs"
           activeKey={activeTab}
           onChange={handleTabChange}
           items={TRANSFER_PLAN_TAB_KEYS.map((key) => ({

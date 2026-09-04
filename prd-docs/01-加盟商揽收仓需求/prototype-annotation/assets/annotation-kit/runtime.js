@@ -267,6 +267,63 @@ function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function headingTitle(line) {
+  const match = String(line || '').trim().match(/^###\s+(.+)$/);
+  return match ? match[1].trim() : '';
+}
+
+function startsWithAny(title, prefixes) {
+  return prefixes.some((prefix) => title === prefix || title.startsWith(prefix));
+}
+
+function splitMarkdownSections(markdown) {
+  const preamble = [];
+  const sections = [];
+  let currentTitle = '';
+  let currentBody = [];
+  for (const line of String(markdown || '').split('\n')) {
+    const title = headingTitle(line);
+    if (title) {
+      if (currentTitle) sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
+      currentTitle = title;
+      currentBody = [];
+      continue;
+    }
+    if (currentTitle) currentBody.push(line);
+    else preamble.push(line);
+  }
+  if (currentTitle) sections.push({ title: currentTitle, body: currentBody.join('\n').trim() });
+  return { preamble: preamble.join('\n').trim(), sections };
+}
+
+function prepareDisplayMarkdown(markdown, pageEntry) {
+  const { preamble, sections } = splitMarkdownSections(markdown);
+  let pageEntryBody = '';
+  let changeLogicBody = '';
+  let pageModeBody = '';
+  let interactionBody = '';
+  const otherSections = [];
+  for (const section of sections) {
+    const { title, body } = section;
+    if (startsWithAny(title, ['页面入口'])) pageEntryBody = body;
+    else if (startsWithAny(title, ['业务定义', '改动逻辑'])) changeLogicBody = body;
+    else if (startsWithAny(title, ['页面模式'])) pageModeBody = body;
+    else if (startsWithAny(title, ['交互规则'])) interactionBody = body;
+    else if (startsWithAny(title, ['研发备注'])) continue;
+    else otherSections.push(section);
+  }
+  if (!pageEntryBody && String(pageEntry || '').trim()) pageEntryBody = String(pageEntry).trim();
+  if (!changeLogicBody) changeLogicBody = pageModeBody || interactionBody;
+  const parts = [];
+  if (preamble) parts.push(preamble);
+  if (pageEntryBody) parts.push(`### 页面入口\n\n${pageEntryBody}`);
+  if (changeLogicBody) parts.push(`### 改动逻辑\n\n${changeLogicBody}`);
+  for (const section of otherSections) {
+    parts.push(section.body ? `### ${section.title}\n\n${section.body}` : `### ${section.title}`);
+  }
+  return parts.join('\n\n').trim();
+}
+
 function extractMarkdownBlock(markdown, blockId) {
   const id = escapeRegExp(blockId);
   const startEndPattern = new RegExp(`<!--\\s*anno:start\\s+id=["']?${id}["']?[^>]*-->([\\s\\S]*?)<!--\\s*anno:end\\s+id=["']?${id}["']?\\s*-->`, 'i');
@@ -313,7 +370,7 @@ async function hydrateMarkdownAnnotations() {
 }
 
 function getAnnotationMarkdown(annotation) {
-  return annotation.markdown || '';
+  return prepareDisplayMarkdown(annotation.markdown || '', annotation.pageEntry || '');
 }
 
 function sortedAnnotations() {

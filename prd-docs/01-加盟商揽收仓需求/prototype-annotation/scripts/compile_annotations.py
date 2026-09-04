@@ -8,6 +8,79 @@ from typing import Optional
 
 
 SCOPE_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+HEADING_PATTERN = re.compile(r"^###\s+(.+)$")
+PAGE_ENTRY_PREFIXES = ("页面入口",)
+CHANGE_LOGIC_PREFIXES = ("业务定义", "改动逻辑")
+PAGE_MODE_PREFIXES = ("页面模式",)
+INTERACTION_PREFIXES = ("交互规则",)
+DEV_NOTE_PREFIXES = ("研发备注",)
+
+
+def heading_title(line: str) -> str:
+    match = HEADING_PATTERN.match(line.strip())
+    return match.group(1).strip() if match else ""
+
+
+def starts_with_any(title: str, prefixes: tuple[str, ...]) -> bool:
+    return any(title == prefix or title.startswith(prefix) for prefix in prefixes)
+
+
+def split_markdown_sections(markdown: str) -> tuple[str, list[tuple[str, str]]]:
+    preamble: list[str] = []
+    sections: list[tuple[str, str]] = []
+    current_title = ""
+    current_body: list[str] = []
+    for line in markdown.splitlines():
+        title = heading_title(line)
+        if title:
+            if current_title:
+                sections.append((current_title, "\n".join(current_body).strip()))
+            current_title = title
+            current_body = []
+            continue
+        if current_title:
+            current_body.append(line)
+        else:
+            preamble.append(line)
+    if current_title:
+        sections.append((current_title, "\n".join(current_body).strip()))
+    return "\n".join(preamble).strip(), sections
+
+
+def prepare_display_markdown(markdown: str, page_entry: str = "") -> str:
+    preamble, sections = split_markdown_sections(markdown)
+    page_entry_body = ""
+    change_logic_body = ""
+    page_mode_body = ""
+    interaction_body = ""
+    other_sections: list[tuple[str, str]] = []
+    for title, body in sections:
+        if starts_with_any(title, PAGE_ENTRY_PREFIXES):
+            page_entry_body = body
+        elif starts_with_any(title, CHANGE_LOGIC_PREFIXES):
+            change_logic_body = body
+        elif starts_with_any(title, PAGE_MODE_PREFIXES):
+            page_mode_body = body
+        elif starts_with_any(title, INTERACTION_PREFIXES):
+            interaction_body = body
+        elif starts_with_any(title, DEV_NOTE_PREFIXES):
+            continue
+        else:
+            other_sections.append((title, body))
+    if not page_entry_body and page_entry.strip():
+        page_entry_body = page_entry.strip()
+    if not change_logic_body:
+        change_logic_body = page_mode_body or interaction_body
+    parts = []
+    if preamble:
+        parts.append(preamble)
+    if page_entry_body:
+        parts.append(f"### 页面入口\n\n{page_entry_body}")
+    if change_logic_body:
+        parts.append(f"### 改动逻辑\n\n{change_logic_body}")
+    for title, body in other_sections:
+        parts.append(f"### {title}\n\n{body}" if body else f"### {title}")
+    return "\n\n".join(parts).strip()
 
 
 def extract_block(markdown: str, block_id: str) -> str:
@@ -83,6 +156,13 @@ def compile_config(config_path: Path, allow_unmapped: bool = False, scope_overri
                 errors.append(f"annotation {annotation_id}: {error}")
         if not str(markdown).strip():
             errors.append(f"annotation {annotation_id} has no Markdown content")
+
+        page_entry = str(annotation.get("pageEntry") or config.get("pageEntry") or "").strip()
+        if page_entry:
+            annotation["pageEntry"] = page_entry
+        else:
+            annotation.pop("pageEntry", None)
+        markdown = prepare_display_markdown(str(markdown), page_entry)
 
         source_refs = [str(ref) for ref in annotation.get("sourceRefs", [])]
         for ref in source_refs:

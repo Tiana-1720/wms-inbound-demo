@@ -69,6 +69,25 @@ const putawayOrders: PutawayOrder[] = [multiPalletOrder, completedOrder]
 
 const boxIndex = new Map<string, PutawayOrder>()
 
+function clonePallet(pallet: PutawayPallet): PutawayPallet {
+  return {
+    ...pallet,
+    箱号列表: [...pallet.箱号列表],
+    箱运单: { ...pallet.箱运单 },
+    运单号列表: [...pallet.运单号列表],
+  }
+}
+
+function cloneOrder(order: PutawayOrder): PutawayOrder {
+  return {
+    ...order,
+    运单列表: order.运单列表.map((item) => ({ ...item })),
+    托明细: order.托明细.map(clonePallet),
+  }
+}
+
+const initialPutawaySnapshots = putawayOrders.map(cloneOrder)
+
 function rebuildBoxIndex() {
   boxIndex.clear()
   for (const order of putawayOrders) {
@@ -81,6 +100,16 @@ function rebuildBoxIndex() {
 }
 
 rebuildBoxIndex()
+
+/** 恢复上架 Mock 至初始快照（含移除分货动态生成的上架单） */
+export function resetPutawayDemo() {
+  putawayOrders.splice(
+    0,
+    putawayOrders.length,
+    ...initialPutawaySnapshots.map(cloneOrder),
+  )
+  rebuildBoxIndex()
+}
 
 export function addPutawayOrder(order: PutawayOrder) {
   putawayOrders.push(order)
@@ -157,10 +186,12 @@ export function confirmPutawayPallet(
   pallet.上架状态 = '已上架'
 
   const progress = calcPutawayProgress(order)
-  if (progress.未上架托数 === 0 && progress.未上架箱数 === 0) {
+  const completed =
+    progress.未上架托数 === 0 && progress.未上架箱数 === 0
+  if (completed) {
     order.状态 = '已完成'
   }
-  return order
+  return { order, completed }
 }
 
 export function getPutawayWorkContext(jobNo: string) {

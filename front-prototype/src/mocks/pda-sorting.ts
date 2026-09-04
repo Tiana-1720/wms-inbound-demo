@@ -66,10 +66,32 @@ const waybills: SortingWaybill[] = [
 ]
 
 const boxIndex = new Map<string, SortingWaybill>()
-for (const waybill of waybills) {
-  for (const no of waybill.预报箱号) {
-    boxIndex.set(no, waybill)
+
+function cloneWaybill(waybill: SortingWaybill): SortingWaybill {
+  return {
+    ...waybill,
+    预报箱号: [...waybill.预报箱号],
+    已绑托箱号: [...waybill.已绑托箱号],
   }
+}
+
+const initialWaybillSnapshots = waybills.map(cloneWaybill)
+
+function rebuildBoxIndex() {
+  boxIndex.clear()
+  for (const waybill of waybills) {
+    for (const no of waybill.预报箱号) {
+      boxIndex.set(no, waybill)
+    }
+  }
+}
+
+rebuildBoxIndex()
+
+/** 恢复分货 Mock 至初始快照，便于重复扫描演示 */
+export function resetSortingDemo() {
+  waybills.splice(0, waybills.length, ...initialWaybillSnapshots.map(cloneWaybill))
+  rebuildBoxIndex()
 }
 
 export function getSortingWaybillMap() {

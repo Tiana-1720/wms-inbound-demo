@@ -126,6 +126,9 @@ Use this structure unless the target project already has a stronger convention:
 
 > 来源：商品管理PRD.md#商品查询、商品管理_Demo_列表页.md#表格与行操作
 
+### 页面入口
+- ...
+
 ### 业务定义
 - ...
 
@@ -147,6 +150,8 @@ Use this structure unless the target project already has a stronger convention:
 - ...
 <!-- anno:end id=1 -->
 ```
+
+原型弹窗默认展示：`页面入口`、`改动逻辑`（由 `业务定义` 改名）、以及其他非隐藏章节。不展示 `页面模式`、`交互规则`、`研发备注`；这三节仍可写在源 Markdown 中，编译后不会进入弹窗。无 `业务定义` 时，弹窗用 `页面模式` 或 `交互规则` 的正文顶上 `改动逻辑`。
 
 Declare stable source requirements in `annotation.config.json`, then map each annotation using `sourceRefs`:
 

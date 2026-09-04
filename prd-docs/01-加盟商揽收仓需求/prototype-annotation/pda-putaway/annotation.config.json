@@ -3,6 +3,7 @@
   "title": "PDA 上架 · 原型标注",
   "scope": "pda-putaway",
   "sourceBase": ".",
+  "pageEntry": "- 入口一：PDA → **入库管理 → 上架**\n- 入口二：PDA → **库内作业 → 移库作业 → 上架 TAB**（受移库作业权限控制）\n- 两入口查询**同一上架单**（R35）\n- 路径 `/pda/inbound/putaway`",
   "runtime": {
     "zIndexBase": 2147480000,
     "initialMode": "annotate"

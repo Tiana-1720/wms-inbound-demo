@@ -8,6 +8,7 @@
     "title": { "type": "string" },
     "scope": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
     "sourceBase": { "type": "string" },
+    "pageEntry": { "type": "string" },
     "runtime": {
       "type": "object",
       "properties": {
@@ -50,6 +51,7 @@
           "markdownFile": { "type": "string" },
           "blockId": { "type": ["string", "integer"] },
           "markdown": { "type": "string" },
+          "pageEntry": { "type": "string" },
           "sourceRefs": { "type": "array", "items": { "type": "string" } },
           "order": { "type": "number" }
         }

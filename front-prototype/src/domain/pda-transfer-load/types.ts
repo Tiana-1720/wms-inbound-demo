@@ -16,6 +16,8 @@ export type TransferLoadLine = {
   箱数: number
   重量: number
   体积: number
+  /** 装车扫描按托关联；小票混托时多票共一托 */
+  托号: string
 }
 
 export type TransferLoadPlan = {

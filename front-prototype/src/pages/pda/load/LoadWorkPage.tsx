@@ -1,4 +1,4 @@
-﻿import { App, Button, Card, Empty, Input, Modal, Tag, theme } from 'antd'
+﻿import { App, Button, Card, Empty, Input, Modal, theme } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -9,15 +9,15 @@ import {
 import { PdaNavBar } from '@/components/pda/PdaNavBar'
 import { ScanInput } from '@/components/pda/ScanInput'
 import { PDA_TRANSFER_LOAD_PATH } from '@/config/routes'
-import { TRANSFER_PLAN_LOADABLE_STATUSES, TRANSFER_PLAN_STATUS_COLOR } from '@/domain/transfer-plan/constants'
+import { TRANSFER_PLAN_LOADABLE_STATUSES } from '@/domain/transfer-plan/constants'
 import {
   confirmDispatch,
   getLoadDriverInfo,
   getLoadPlan,
+  getLoadScanStats,
   getLoadSession,
   isLoadDriverReady,
   removeLoadLine,
-  resetLoadSession,
   scanLoadBox,
   setLoadDriverInfo,
 } from '@/mocks/pda-transfer-load'
@@ -25,9 +25,8 @@ import {
 const LOAD_SCAN_ERROR = {
   missing: '箱号不存在',
   notOnShelf: '货物未上架或不在库',
-  occupied: '该货物已被占用',
-  destMismatch: '目的仓与调入仓库不一致',
   duplicate: '该运单已关联',
+  incompleteWaybill: '请先扫齐当前运单全部托',
 } as const
 
 export function LoadWorkPage() {
@@ -41,7 +40,12 @@ export function LoadWorkPage() {
 
   const plan = useMemo(() => getLoadPlan(planNo), [planNo, tick])
   const lines = useMemo(() => getLoadSession(planNo), [planNo, tick])
+  const scanStats = useMemo(() => getLoadScanStats(planNo), [planNo, tick])
   const driver = useMemo(() => getLoadDriverInfo(planNo), [planNo, tick])
+
+  useEffect(() => {
+    setTick((v) => v + 1)
+  }, [planNo])
 
   useEffect(() => {
     if (driverModalOpen) {
@@ -71,16 +75,15 @@ export function LoadWorkPage() {
 
   const handleScan = (raw: string) => {
     const result = scanLoadBox(planNo, raw)
-    if (result.kind !== 'hit') {
-      message.error(LOAD_SCAN_ERROR[result.kind])
+    if (result.kind === 'hit') {
+      setTick((v) => v + 1)
       return
     }
-    setTick((v) => v + 1)
-  }
-
-  const handleReset = () => {
-    resetLoadSession(planNo)
-    setTick((v) => v + 1)
+    if (result.kind === 'boxOccupied') {
+      message.error(`箱号${result.boxNo}已被${result.occupier}占用`)
+      return
+    }
+    message.error(LOAD_SCAN_ERROR[result.kind])
   }
 
   const handleDispatch = () => {
@@ -94,18 +97,9 @@ export function LoadWorkPage() {
     }
     setLoadDriverInfo(planNo, draftDriver)
     setDriverModalOpen(false)
-    Modal.confirm({
-      title: '确认装车',
-      content:
-        '确认装车？将生成/更新出库单（已复核），并占用库位库存；待 PC 确认出库后实扣。',
-      okText: '确认装车',
-      cancelText: '取消',
-      onOk: () => {
-        if (!confirmDispatch(planNo)) return
-        message.success('装车成功，已占用库存')
-        navigate(PDA_TRANSFER_LOAD_PATH)
-      },
-    })
+    if (!confirmDispatch(planNo)) return
+    message.success('装车成功，已占用库存')
+    navigate(PDA_TRANSFER_LOAD_PATH)
   }
 
   return (
@@ -171,12 +165,9 @@ export function LoadWorkPage() {
         <div style={{ marginBottom: 8 }}>
           调出：{plan.调出仓库}　调入：{plan.调入仓库}
         </div>
-        <Tag color={TRANSFER_PLAN_STATUS_COLOR[plan.状态]}>{plan.状态}</Tag>
-        {plan.出库单状态 !== '未生成' ? (
-          <Tag color={plan.出库单状态 === '已复核' ? 'orange' : 'default'}>
-            出库单{plan.出库单状态}
-          </Tag>
-        ) : null}
+        <div style={{ color: token.colorTextSecondary }}>
+          已扫：{scanStats.票数}票 / {scanStats.托数}托
+        </div>
       </div>
 
       {!readonly ? (
@@ -243,41 +234,17 @@ export function LoadWorkPage() {
           ))
         )}
         </div>
-
-        <div
-          style={{
-            flexShrink: 0,
-            margin: 12,
-            marginTop: 0,
-            padding: '12px 16px',
-            ...panelStyle,
-          }}
-        >
-          <div>合计：{plan.汇总箱数}箱</div>
-          <div style={{ marginTop: 4 }}>{plan.汇总重量.toFixed(2)}KG</div>
-          <div style={{ marginTop: 4 }}>{plan.汇总体积.toFixed(6)}CBM</div>
-        </div>
       </div>
 
       {showBottom ? (
         <div data-anno="pda-load-work-bottom">
           <PdaBottomBar>
             <Button
-            style={{
-              ...PDA_PRIMARY_BUTTON_STYLE,
-              color: token.colorPrimary,
-              borderColor: token.colorPrimary,
-            }}
-            onClick={handleReset}
-          >
-            重置
-          </Button>
-          <Button
-            type="primary"
-            style={PDA_PRIMARY_BUTTON_STYLE}
-            onClick={handleDispatch}
-          >
-            装车
+              type="primary"
+              style={PDA_PRIMARY_BUTTON_STYLE}
+              onClick={handleDispatch}
+            >
+              装车
             </Button>
           </PdaBottomBar>
         </div>
