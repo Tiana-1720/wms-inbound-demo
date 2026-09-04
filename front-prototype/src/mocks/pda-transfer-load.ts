@@ -193,7 +193,7 @@ function clonePlan(plan: TransferLoadPlan): TransferLoadPlan {
   }
 }
 
-/** 原型初始快照：装车提交后回滚，便于重复演示扫描交互 */
+/** 原型初始快照：刷新页面时用于恢复演示数据（装车提交后不回滚） */
 const initialPlanSnapshots = new Map(
   plans.map((plan) => [plan.调拨计划单号, clonePlan(plan)]),
 )
