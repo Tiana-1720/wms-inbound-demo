@@ -263,9 +263,6 @@ export function LoadWorkPage() {
                   {boxProgress.scannedBoxes}/{boxProgress.totalBoxes}箱
                 </span>
               </div>
-              <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
-                客户：{line.客户代码}
-              </div>
               <div style={{ color: token.colorTextSecondary }}>
                 {line.箱数}箱　{line.重量.toFixed(2)}KG　
                 {line.体积.toFixed(6)}CBM
