@@ -2,6 +2,7 @@ import { CURRENT_OPERATOR } from '@/domain/outbound-order/constants'
 import { parseBatchValues } from '@/domain/outbound-order/filter'
 import type {
   CandidateWaybill,
+  OutboundDetailLine,
   OutboundOrder,
   OutboundOrderLine,
 } from '@/domain/outbound-order/types'
@@ -105,15 +106,56 @@ function isWaybillLinked(运单号: string, excludeOutboundNo?: string) {
   })
 }
 
-function lineToCandidate(line: OutboundOrderLine): CandidateWaybill {
+function lineToCandidate(
+  line: OutboundOrderLine,
+  收货仓库: string,
+): CandidateWaybill {
   return {
     运单号: line.运单号,
     客户代码: line.客户代码,
+    收货仓库,
     箱数: line.箱数,
     重量: line.重量,
     体积: line.体积,
     可关联: true,
   }
+}
+
+function candidateToDetailLine(
+  candidate: CandidateWaybill | OutboundOrderLine,
+): OutboundDetailLine {
+  return {
+    运单号: candidate.运单号,
+    客户代码: candidate.客户代码,
+    箱数: candidate.箱数,
+    重量: candidate.重量,
+    体积: candidate.体积,
+    装柜顺序: '装柜顺序' in candidate ? candidate.装柜顺序 : null,
+    出库渠道: '出库渠道' in candidate ? candidate.出库渠道 : null,
+    品名: '品名' in candidate ? candidate.品名 : null,
+    客户备注: '客户备注' in candidate ? candidate.客户备注 : null,
+    内部备注: '内部备注' in candidate ? candidate.内部备注 : null,
+    目的仓库: '目的仓库' in candidate ? candidate.目的仓库 : null,
+    目的邮编: '目的邮编' in candidate ? candidate.目的邮编 : null,
+    预计到仓时间:
+      '预计到仓时间' in candidate ? candidate.预计到仓时间 : null,
+    状态: '状态' in candidate ? candidate.状态 : '已上架',
+  }
+}
+
+function findCandidateMeta(运单号: string) {
+  return candidateWaybillPool.find((item) => item.运单号 === 运单号)
+}
+
+/** 出库详情/关联运单明细（对齐现网出库明细 Tab） */
+export function listOutboundDetailLines(outboundNo: string): OutboundDetailLine[] {
+  const order = getOutboundOrder(outboundNo)
+  if (!order) return []
+
+  return getOrderLines(order).map((line) => {
+    const meta = findCandidateMeta(line.运单号)
+    return candidateToDetailLine(meta ?? line)
+  })
 }
 
 /** 可选运单列表（同仓、已上架库存 Mock + 本单已关联运单） */
@@ -124,6 +166,7 @@ export function listCandidateWaybills(
   const order = getOutboundOrder(outboundNo)
   if (!order) return []
 
+  const currentWarehouse = order.归属仓库
   const savedLines = getOrderLines(order)
   const savedKeys = new Set(savedLines.map((line) => line.运单号))
 
@@ -136,6 +179,7 @@ export function listCandidateWaybills(
 
   const fromPool = candidateWaybillPool
     .filter((item) => item?.运单号)
+    .filter((item) => item.收货仓库 === currentWarehouse)
     .filter((item) => {
       if (!matchesWaybillQuery(item.运单号)) {
         return false
@@ -159,9 +203,31 @@ export function listCandidateWaybills(
   const fromSaved = savedLines
     .filter((line) => !poolKeys.has(line.运单号))
     .filter((line) => matchesWaybillQuery(line.运单号))
-    .map(lineToCandidate)
+    .map((line) => lineToCandidate(line, currentWarehouse))
 
   return [...fromSaved, ...fromPool]
+}
+
+/** 关联运单页预览明细（历史已保存 + 本次待保存） */
+export function mergeOutboundDetailPreview(
+  outboundNo: string,
+  pendingCandidates: CandidateWaybill[],
+): OutboundDetailLine[] {
+  const order = getOutboundOrder(outboundNo)
+  if (!order) return []
+
+  const saved = getOrderLines(order)
+  const savedKeys = new Set(saved.map((line) => line.运单号))
+  const pending = pendingCandidates.filter(
+    (item) => item?.运单号 && !savedKeys.has(item.运单号),
+  )
+
+  return [
+    ...saved.map((line) =>
+      candidateToDetailLine(findCandidateMeta(line.运单号) ?? line),
+    ),
+    ...pending.map((item) => candidateToDetailLine(item)),
+  ]
 }
 
 /** PC 关联运单保存（不变更出库单状态，Demo PRD §2.6） */

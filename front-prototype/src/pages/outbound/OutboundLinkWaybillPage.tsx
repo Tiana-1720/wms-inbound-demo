@@ -1,4 +1,4 @@
-import { FooterToolbar, PageContainer } from '@ant-design/pro-components'
+import { PageContainer } from '@ant-design/pro-components'
 import {
   App,
   Button,
@@ -20,41 +20,15 @@ import { OUTBOUND_ORDER_LIST_PATH } from '@/config/routes'
 import {
   getOutboundOrder,
   listCandidateWaybills,
+  mergeOutboundDetailPreview,
   saveOutboundWaybillLinks,
 } from '@/domain/outbound-order/store'
-import type { CandidateWaybill, OutboundOrderLine } from '@/domain/outbound-order/types'
+import type { CandidateWaybill } from '@/domain/outbound-order/types'
 import {
-  formatVolume,
-  formatWeight,
-} from '@/domain/transfer-plan/constants'
-
-const waybillTableColumns = [
-  { title: '运单号', dataIndex: '运单号' },
-  { title: '客户代码', dataIndex: '客户代码', width: 120 },
-  { title: '箱数', dataIndex: '箱数', width: 80 },
-  {
-    title: '重量',
-    dataIndex: '重量',
-    width: 100,
-    render: (value: number) => formatWeight(value),
-  },
-  {
-    title: '体积',
-    dataIndex: '体积',
-    width: 120,
-    render: (value: number) => formatVolume(value),
-  },
-]
-
-function toOutboundLine(item: CandidateWaybill): OutboundOrderLine {
-  return {
-    运单号: item.运单号,
-    客户代码: item.客户代码,
-    箱数: item.箱数,
-    重量: item.重量,
-    体积: item.体积,
-  }
-}
+  calcOutboundDetailSummary,
+  candidateWaybillModalColumns,
+  outboundDetailTableColumns,
+} from '@/pages/outbound/outboundDetailColumns'
 
 export function OutboundLinkWaybillPage() {
   const navigate = useNavigate()
@@ -75,10 +49,7 @@ export function OutboundLinkWaybillPage() {
   const order = useMemo(() => getOutboundOrder(id), [id, tick])
 
   const savedKeys = useMemo(
-    () =>
-      (order?.明细 ?? [])
-        .filter((line): line is OutboundOrderLine => Boolean(line?.运单号))
-        .map((line) => line.运单号),
+    () => (order?.明细 ?? []).map((line) => line.运单号),
     [order],
   )
 
@@ -87,17 +58,15 @@ export function OutboundLinkWaybillPage() {
     [id, modalSearchKeyword, tick, selectModalOpen],
   )
 
-  const previewLines = useMemo(() => {
-    if (!order) return []
-    const saved = (order.明细 ?? []).filter((line): line is OutboundOrderLine =>
-      Boolean(line?.运单号),
-    )
-    const savedSet = new Set(saved.map((line) => line.运单号))
-    const pending = pendingCandidates
-      .filter((item) => item?.运单号 && !savedSet.has(item.运单号))
-      .map(toOutboundLine)
-    return [...saved, ...pending]
-  }, [order, pendingCandidates])
+  const previewLines = useMemo(
+    () => mergeOutboundDetailPreview(id, pendingCandidates),
+    [id, pendingCandidates, tick],
+  )
+
+  const summary = useMemo(
+    () => calcOutboundDetailSummary(previewLines),
+    [previewLines],
+  )
 
   const hasUnsavedChanges = pendingCandidates.length > 0
   const canEdit = order && ['待出库', '已复核'].includes(order.状态)
@@ -247,13 +216,19 @@ export function OutboundLinkWaybillPage() {
     )
   }
 
+  const summaryItems = [
+    { label: '收货计划件数', value: summary.收货计划件数 },
+    { label: '收货计划重量(KG)', value: summary.收货计划重量 },
+    { label: '收货计划体积(CBM)', value: summary.收货计划体积 },
+    { label: '收货计划订单数', value: summary.收货计划订单数 },
+  ]
+
   return (
     <div data-anno="outbound-link-waybill-page">
       <PageContainer
         title="出库单 · 关联运单"
         ghost
         onBack={handleBack}
-        style={{ paddingBottom: 80 }}
       >
         <Card
           data-anno="outbound-link-waybill-header"
@@ -281,85 +256,102 @@ export function OutboundLinkWaybillPage() {
           </div>
           <Form layout="vertical" disabled>
             <Row gutter={16}>
-              <Col span={6}>
+              <Col span={8}>
                 <Form.Item label="柜号">
-                  <Input
-                    placeholder="请输入"
-                    value={order.柜号 ?? ''}
-                  />
+                  <Input placeholder="请输入" value={order.柜号 ?? ''} />
                 </Form.Item>
               </Col>
-              <Col span={6}>
-                <Form.Item label="司机">
-                  <Input
-                    placeholder="请输入"
-                    value={order.司机 ?? ''}
-                  />
-                </Form.Item>
-              </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Form.Item label="电话">
-                  <Input
-                    placeholder="请输入"
-                    value={order.电话 ?? ''}
-                  />
+                  <Input placeholder="请输入" value={order.电话 ?? ''} />
                 </Form.Item>
               </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Form.Item label="车牌号">
-                  <Input
-                    placeholder="请输入"
-                    value={order.车牌号 ?? ''}
-                  />
+                  <Input placeholder="请输入" value={order.车牌号 ?? ''} />
                 </Form.Item>
               </Col>
             </Row>
           </Form>
         </Card>
 
-        {canEdit ? (
-          <Card
-            title="选择运单"
-            data-anno="outbound-link-waybill-select"
-            style={{ marginBottom: 16 }}
-          >
-            <Button type="primary" onClick={openSelectModal}>
-              选择运单
-            </Button>
-            {pendingCandidates.length > 0 ? (
-              <span style={{ marginLeft: 12, color: 'rgba(0,0,0,0.45)' }}>
-                已选 {pendingCandidates.length} 票（待保存）
-              </span>
-            ) : null}
-          </Card>
-        ) : null}
+        <Card
+          title="出库明细"
+          data-anno="outbound-link-waybill-lines"
+          styles={{ body: { paddingTop: 12 } }}
+        >
+          {canEdit ? (
+            <div
+              data-anno="outbound-link-waybill-select"
+              style={{ marginBottom: 12 }}
+            >
+              <Button type="primary" onClick={openSelectModal}>
+                选择运单
+              </Button>
+              {pendingCandidates.length > 0 ? (
+                <span style={{ marginLeft: 12, color: 'rgba(0,0,0,0.45)' }}>
+                  已选 {pendingCandidates.length} 票（待保存）
+                </span>
+              ) : null}
+            </div>
+          ) : null}
 
-        <Card title="运单明细" data-anno="outbound-link-waybill-lines">
-          <Table<OutboundOrderLine>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 32,
+              padding: '12px 16px',
+              marginBottom: 16,
+              background: '#e6f4ff',
+              borderRadius: 4,
+            }}
+          >
+            {summaryItems.map((item) => (
+              <div key={item.label}>
+                <span style={{ color: 'rgba(0,0,0,0.45)' }}>{item.label}：</span>
+                <span style={{ fontWeight: 500 }}>{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <Table
             rowKey="运单号"
             dataSource={previewLines}
+            columns={outboundDetailTableColumns}
             pagination={false}
+            scroll={{ x: 1500 }}
             locale={{ emptyText: '暂无关联运单' }}
-            columns={waybillTableColumns}
           />
         </Card>
 
-        {canEdit ? (
-          <FooterToolbar data-anno="outbound-link-waybill-actions">
-            <Button onClick={handleBack}>取消</Button>
-            <Button
-              type="primary"
-              onClick={handleSave}
-              disabled={!hasUnsavedChanges}
-            >
-              确定
-            </Button>
-          </FooterToolbar>
-        ) : (
-          <FooterToolbar data-anno="outbound-link-waybill-actions">
+        <div
+          data-anno="outbound-link-waybill-actions"
+          style={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            gap: 8,
+            marginTop: 16,
+            padding: '16px 24px',
+            background: '#fff',
+            borderRadius: 8,
+            border: '1px solid #f0f0f0',
+          }}
+        >
+          {canEdit ? (
+            <>
+              <Button onClick={handleBack}>取消</Button>
+              <Button
+                type="primary"
+                onClick={handleSave}
+                disabled={!hasUnsavedChanges}
+              >
+                确定
+              </Button>
+            </>
+          ) : (
             <Button onClick={handleBack}>返回列表</Button>
-          </FooterToolbar>
-        )}
+          )}
+        </div>
       </PageContainer>
 
       <Modal
@@ -395,6 +387,9 @@ export function OutboundLinkWaybillPage() {
             查询
           </Button>
         </Space>
+        <div style={{ marginBottom: 12, color: 'rgba(0,0,0,0.45)' }}>
+          仅展示收货仓库为当前仓库（{order.归属仓库}）的已上架运单
+        </div>
         <Table<CandidateWaybill>
           rowKey="运单号"
           dataSource={modalCandidates}
@@ -412,7 +407,7 @@ export function OutboundLinkWaybillPage() {
             }),
             onSelect: handleModalRowSelect,
           }}
-          columns={waybillTableColumns}
+          columns={candidateWaybillModalColumns}
         />
       </Modal>
     </div>

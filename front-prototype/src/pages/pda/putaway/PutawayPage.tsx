@@ -24,7 +24,7 @@ import {
   confirmPutawayPallet,
   getPutawayOrder,
   getPutawayWorkContext,
-  listPendingPutawayOrders,
+  listPutawayListEntries,
   lookupPutawayBox,
   resetPutawayDemo,
 } from '@/mocks/putaway'
@@ -57,7 +57,7 @@ export function PutawayPage() {
   const [detailTab, setDetailTab] = useState<DetailTab>('全部')
   const [draftByPallet, setDraftByPallet] = useState<Record<string, string>>({})
 
-  const pendingOrders = useMemo(() => listPendingPutawayOrders(), [tick])
+  const listEntries = useMemo(() => listPutawayListEntries(), [tick])
 
   const order = useMemo(
     () => (work ? getPutawayOrder(work.jobNo) : null),
@@ -466,33 +466,65 @@ export function PutawayPage() {
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
-        {pendingOrders.length === 0 ? (
+        {listEntries.length === 0 ? (
           <div style={{ ...panelStyle, padding: 24 }}>
             <Empty description="暂无待派发/已派发的移库作业" />
           </div>
         ) : (
-          pendingOrders.map((item) => (
-            <Card
-              key={item.作业单号}
-              size="small"
-              hoverable
-              style={{ marginBottom: 8, ...panelStyle }}
-              onClick={() => handleOpenFromList(item.作业单号)}
-            >
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                {item.作业单号}
-              </div>
-              <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
-                派发：{item.派发状态}
-              </div>
-              <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
-                运单号：{formatWaybillNos(item)}
-              </div>
-              <div style={{ color: token.colorTextSecondary }}>
-                托号 {item.托号}　{item.件数}件
-              </div>
-            </Card>
-          ))
+          listEntries.map((item) => {
+            const scanComplete =
+              item.总箱数 > 0 && item.已上架箱数 >= item.总箱数
+            const progressColor = scanComplete
+              ? token.colorSuccess
+              : item.已上架箱数 > 0
+                ? token.colorWarning
+                : token.colorText
+
+            return (
+              <Card
+                key={item.key}
+                size="small"
+                hoverable
+                style={{ marginBottom: 8, ...panelStyle }}
+                onClick={() => handleOpenFromList(item.作业单号)}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ lineHeight: 1.5 }}>
+                      <span style={{ color: token.colorText }}>运单 </span>
+                      <span style={{ fontWeight: 600 }}>{item.运单号}</span>
+                    </div>
+                    <div
+                      style={{
+                        marginTop: 4,
+                        lineHeight: 1.5,
+                        color: token.colorTextSecondary,
+                      }}
+                    >
+                      箱号 {item.箱号}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      fontWeight: 600,
+                      fontSize: 16,
+                      color: progressColor,
+                    }}
+                  >
+                    {item.已上架箱数}/{item.总箱数}
+                  </div>
+                </div>
+              </Card>
+            )
+          })
         )}
       </div>
       </div>

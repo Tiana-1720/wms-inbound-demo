@@ -13,6 +13,19 @@ export type OutboundOrderLine = {
   体积: number
 }
 
+/** 出库详情/关联运单明细展示行（对齐现网出库明细 Tab 扩展列） */
+export type OutboundDetailLine = OutboundOrderLine & {
+  装柜顺序?: string | null
+  出库渠道?: string | null
+  品名?: string | null
+  客户备注?: string | null
+  内部备注?: string | null
+  目的仓库?: string | null
+  目的邮编?: string | null
+  预计到仓时间?: string | null
+  状态?: string | null
+}
+
 /** 列表查询区（现网出库列表） */
 export type OutboundOrderFilters = {
   运单号: string
@@ -61,12 +74,9 @@ export type OutboundOrder = {
 }
 
 /** 可选运单（关联运单页 §2.4） */
-export type CandidateWaybill = {
-  运单号: string
-  客户代码: string
-  箱数: number
-  重量: number
-  体积: number
+export type CandidateWaybill = OutboundDetailLine & {
+  /** 收货仓库代码，须与出库单归属仓库一致方可勾选 */
+  收货仓库: string
   可关联: boolean
   占用方?: string
 }

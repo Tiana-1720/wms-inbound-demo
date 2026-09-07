@@ -1,6 +1,6 @@
 import { PUTAWAY_DISPATCH_LIST_STATUSES } from '@/domain/putaway/constants'
 import { resolvePutawayLocation } from '@/domain/putaway/logic'
-import type { PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
+import type { PutawayListEntry, PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
 
 function boxNo(seq: number) {
   return `FBA1988W5Y0GU${String(seq).padStart(6, '0')}`
@@ -157,6 +157,57 @@ export function listPendingPutawayOrders() {
       PUTAWAY_DISPATCH_LIST_STATUSES.includes(item.派发状态) &&
       item.状态 === '待上架',
   )
+}
+
+function palletsForWaybill(order: PutawayOrder, 运单号: string) {
+  return order.托明细.filter((pallet) => pallet.运单号列表.includes(运单号))
+}
+
+function countWaybillBoxes(
+  pallets: PutawayPallet[],
+  运单号: string,
+  上架状态: PutawayPallet['上架状态'],
+) {
+  return pallets
+    .filter((pallet) => pallet.上架状态 === 上架状态)
+    .reduce((sum, pallet) => {
+      const boxes = pallet.箱号列表.filter((no) => pallet.箱运单[no] === 运单号)
+      return sum + boxes.length
+    }, 0)
+}
+
+function firstListBoxNo(pallets: PutawayPallet[], 运单号: string) {
+  const pending = pallets.filter((pallet) => pallet.上架状态 === '待上架')
+  for (const pallet of pending) {
+    const boxNo = pallet.箱号列表.find((no) => pallet.箱运单[no] === 运单号)
+    if (boxNo) return boxNo
+  }
+  for (const pallet of pallets) {
+    const boxNo = pallet.箱号列表.find((no) => pallet.箱运单[no] === 运单号)
+    if (boxNo) return boxNo
+  }
+  return ''
+}
+
+/** 上架入口列表：按运单展示运单号、箱号、已上架箱数/总箱数 */
+export function listPutawayListEntries(): PutawayListEntry[] {
+  const entries: PutawayListEntry[] = []
+
+  for (const order of listPendingPutawayOrders()) {
+    for (const line of order.运单列表) {
+      const pallets = palletsForWaybill(order, line.运单号)
+      entries.push({
+        key: `${order.作业单号}:${line.运单号}`,
+        作业单号: order.作业单号,
+        运单号: line.运单号,
+        箱号: firstListBoxNo(pallets, line.运单号),
+        已上架箱数: countWaybillBoxes(pallets, line.运单号, '已上架'),
+        总箱数: line.件数,
+      })
+    }
+  }
+
+  return entries
 }
 
 export function getPutawayOrder(jobNo: string) {

@@ -41,3 +41,13 @@ export type PutawayOrder = {
   初始库位: string | null
   托明细: PutawayPallet[]
 }
+
+/** 上架入口列表行（按运单展示） */
+export type PutawayListEntry = {
+  key: string
+  作业单号: string
+  运单号: string
+  箱号: string
+  已上架箱数: number
+  总箱数: number
+}
