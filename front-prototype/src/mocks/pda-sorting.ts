@@ -1,8 +1,11 @@
 import type { SortingWaybill } from '@/domain/pda-sorting/types'
+import { SORTING_WAYBILL_QUERY_STATUSES } from '@/domain/pda-sorting/constants'
 
 export type BoxLookup =
   | { kind: 'missing' }
   | { kind: 'noForecast' }
+  | { kind: 'waybillNotSortable' }
+  | { kind: 'alreadyBound' }
   | {
       kind: 'hit'
       waybill: SortingWaybill
@@ -24,7 +27,7 @@ const waybills: SortingWaybill[] = [
   {
     运单号: 'DSL26010128301',
     预报箱数: 30,
-    状态: '待收货',
+    状态: '已收货',
     预报箱号: range(351, 30),
     已绑托箱号: [],
   },
@@ -59,7 +62,7 @@ const waybills: SortingWaybill[] = [
   {
     运单号: 'DSL26010128399',
     预报箱数: 1,
-    状态: '已绑托',
+    状态: '收货中',
     预报箱号: [boxNo(400)],
     已绑托箱号: [boxNo(400)],
   },
@@ -98,6 +101,10 @@ export function getSortingWaybillMap() {
   return new Map(waybills.map((item) => [item.运单号, item]))
 }
 
+export function isSortingWaybillEligible(waybill: SortingWaybill) {
+  return SORTING_WAYBILL_QUERY_STATUSES.includes(waybill.状态)
+}
+
 export function lookupSortingBox(raw: string): BoxLookup {
   const boxNoValue = raw.trim().toUpperCase()
   if (boxNoValue === UNFORECAST_BOX_NO) {
@@ -106,6 +113,12 @@ export function lookupSortingBox(raw: string): BoxLookup {
   const waybill = boxIndex.get(boxNoValue)
   if (!waybill) {
     return { kind: 'missing' }
+  }
+  if (!isSortingWaybillEligible(waybill)) {
+    return { kind: 'waybillNotSortable' }
+  }
+  if (waybill.已绑托箱号.includes(boxNoValue)) {
+    return { kind: 'alreadyBound' }
   }
   return { kind: 'hit', waybill, boxNo: boxNoValue }
 }

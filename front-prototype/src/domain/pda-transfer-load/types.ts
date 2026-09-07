@@ -8,6 +8,12 @@ export type TransferLoadDriverInfo = {
 
 export type OutboundOrderStatus = '待出库' | '已复核' | '已出库'
 
+/** PDA 装车列表：出库单状态须为待出库或已复核 */
+export const OUTBOUND_LOAD_LIST_STATUSES: OutboundOrderStatus[] = [
+  '待出库',
+  '已复核',
+]
+
 export type TransferLoadPlanStatus = TransferPlanStatus
 
 export type TransferLoadLine = {
@@ -22,10 +28,12 @@ export type TransferLoadLine = {
 
 export type TransferLoadPlan = {
   调拨计划单号: string
+  出库单号: string
   调出仓库: string
   调入仓库: string
   状态: TransferLoadPlanStatus
   出库单状态: OutboundOrderStatus
+  是否锁单: '是' | '否'
   汇总箱数: number
   汇总重量: number
   汇总体积: number

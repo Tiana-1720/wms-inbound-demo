@@ -35,6 +35,7 @@ import { resetSortingDemo } from '@/mocks/pda-sorting'
 const PUTAWAY_SCAN_ERROR = {
   missing: '箱号不存在',
   notBound: '当前箱号未绑托',
+  notDispatchable: '该作业单不在待派发/已派发范围',
   alreadyPutaway: '该箱已上架，不可重复上架',
 } as const
 
@@ -113,6 +114,10 @@ export function PutawayPage() {
     }
     if (result.kind === 'notBound') {
       message.error(PUTAWAY_SCAN_ERROR.notBound)
+      return
+    }
+    if (result.kind === 'notDispatchable') {
+      message.error(PUTAWAY_SCAN_ERROR.notDispatchable)
       return
     }
     if (result.kind === 'alreadyPutaway') {
@@ -464,7 +469,7 @@ export function PutawayPage() {
       <div style={{ flex: 1, overflow: 'auto', padding: 12 }}>
         {pendingOrders.length === 0 ? (
           <div style={{ ...panelStyle, padding: 24 }}>
-            <Empty description="暂无待上架任务" />
+            <Empty description="暂无待派发/已派发的移库作业" />
           </div>
         ) : (
           pendingOrders.map((item) => (
@@ -477,6 +482,9 @@ export function PutawayPage() {
             >
               <div style={{ fontWeight: 600, marginBottom: 8 }}>
                 {item.作业单号}
+              </div>
+              <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
+                派发：{item.派发状态}
               </div>
               <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
                 运单号：{formatWaybillNos(item)}

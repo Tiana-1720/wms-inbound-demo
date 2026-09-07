@@ -32,7 +32,6 @@ import {
 import type { SortingSession, SortingWaybill } from '@/domain/pda-sorting/types'
 import {
   getSortingWaybillMap,
-  isBoxAlreadyBound,
   lookupSortingBox,
   markPalletBound,
   resetSortingDemo,
@@ -210,13 +209,16 @@ export function SortingPage() {
       message.error(SCAN_ERROR_MESSAGE.noForecast)
       return
     }
-
-    const { waybill, boxNo } = result
-    if (isBoxAlreadyBound(boxNo)) {
+    if (result.kind === 'waybillNotSortable') {
+      message.error(SCAN_ERROR_MESSAGE.waybillNotSortable)
+      return
+    }
+    if (result.kind === 'alreadyBound') {
       message.error(SCAN_ERROR_MESSAGE.alreadyBound)
       return
     }
 
+    const { waybill, boxNo } = result
     if (isBoxScanned(session, boxNo)) {
       message.error(SCAN_ERROR_MESSAGE.alreadyScanned)
       return
@@ -238,6 +240,7 @@ export function SortingPage() {
       waybill,
       palletIndex: target,
     })
+    setSession({ ...session, activePalletIndex: target })
   }
 
   const confirmDrop = () => {
@@ -314,8 +317,30 @@ export function SortingPage() {
           <div data-anno="pda-sorting-drop-confirm">
             <div>箱号：{dropConfirm.boxNo}</div>
             <div style={{ marginTop: 8 }}>运单号：{dropConfirm.waybill.运单号}</div>
-            <div style={{ marginTop: 8 }}>
-              进入 托 {dropConfirm.palletIndex + 1}
+            <div
+              style={{
+                marginTop: 16,
+                padding: '12px 16px',
+                borderRadius: 8,
+                background: token.colorPrimaryBg,
+                border: `2px solid ${token.colorPrimary}`,
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ color: token.colorTextSecondary, fontSize: 12 }}>
+                将进入
+              </div>
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 28,
+                  fontWeight: 700,
+                  color: token.colorPrimary,
+                  lineHeight: 1.2,
+                }}
+              >
+                托 {dropConfirm.palletIndex + 1}
+              </div>
             </div>
           </div>
         ) : null}
@@ -395,6 +420,8 @@ export function SortingPage() {
             {session.pallets.map((pallet, index) => {
               const waybills = getPalletWaybills(pallet)
               const focused = index === session.activePalletIndex
+              const incoming = dropConfirm?.palletIndex === index
+              const emphasized = focused || incoming
               return (
                 <Card
                   key={`slot-${index}`}
@@ -410,8 +437,9 @@ export function SortingPage() {
                         background: 'transparent',
                         padding: 0,
                         cursor: 'pointer',
-                        fontWeight: focused ? 600 : 400,
-                        color: focused ? token.colorPrimary : token.colorText,
+                        fontWeight: emphasized ? 700 : 400,
+                        color: emphasized ? token.colorPrimary : token.colorText,
+                        fontSize: emphasized ? 16 : 14,
                       }}
                     >
                       托 {index + 1}
@@ -425,15 +453,32 @@ export function SortingPage() {
                   }
                   style={{
                     marginBottom: 8,
-                    border: `1px solid ${
-                      focused ? token.colorPrimary : token.colorBorder
-                    }`,
-                    boxShadow: focused
-                      ? `0 0 0 1px ${token.colorPrimaryBg}`
+                    border: emphasized
+                      ? `2px solid ${token.colorPrimary}`
+                      : `1px solid ${token.colorBorder}`,
+                    background: emphasized ? token.colorPrimaryBg : token.colorBgContainer,
+                    boxShadow: emphasized
+                      ? `0 0 0 2px ${token.colorPrimaryBorder}`
                       : undefined,
+                    position: 'relative',
+                    overflow: 'hidden',
                   }}
-                  styles={{ body: { paddingBottom: pallet.boxes.length > 0 ? 8 : 12 } }}
+                  styles={{
+                    body: { paddingBottom: pallet.boxes.length > 0 ? 8 : 12 },
+                  }}
                 >
+                  {emphasized ? (
+                    <div
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 4,
+                        background: token.colorPrimary,
+                      }}
+                    />
+                  ) : null}
                   {pallet.boxes.length === 0 ? (
                     <div style={{ color: token.colorTextSecondary }}>
                       暂无扫描箱号

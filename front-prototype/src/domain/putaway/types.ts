@@ -2,6 +2,9 @@ export type PutawayPalletStatus = '待上架' | '已上架'
 
 export type PutawayOrderStatus = '待上架' | '已完成'
 
+/** 移库作业派发状态（上架 TAB 列表查询） */
+export type PutawayDispatchStatus = '待派发' | '已派发'
+
 /** 上架单关联运单（小票混托时一单多运单） */
 export type PutawayWaybillLine = {
   运单号: string
@@ -28,6 +31,8 @@ export type PutawayOrder = {
   /** 上架单下全部运单；大票通常 1 条，小票混托可多条 */
   运单列表: PutawayWaybillLine[]
   作业类型: '收货上架'
+  /** 移库作业派发状态；列表查询待派发/已派发 */
+  派发状态: PutawayDispatchStatus
   件数: number
   托数: number
   状态: PutawayOrderStatus

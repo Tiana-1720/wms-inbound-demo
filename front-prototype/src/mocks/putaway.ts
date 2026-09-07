@@ -1,3 +1,4 @@
+import { PUTAWAY_DISPATCH_LIST_STATUSES } from '@/domain/putaway/constants'
 import { resolvePutawayLocation } from '@/domain/putaway/logic'
 import type { PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
 
@@ -35,6 +36,7 @@ const multiPalletOrder: PutawayOrder = {
   作业单号: 'TK2601010001',
   运单列表: [{ 运单号: 'DSL26010128343', 件数: 350, 历史上架库位: 'BH-A-01' }],
   作业类型: '收货上架',
+  派发状态: '待派发',
   件数: 350,
   托数: 8,
   状态: '待上架',
@@ -56,6 +58,7 @@ const completedOrder: PutawayOrder = {
   作业单号: 'TK2601010002',
   运单列表: [{ 运单号: 'DSL26010128301', 件数: 30 }],
   作业类型: '收货上架',
+  派发状态: '已派发',
   件数: 30,
   托数: 1,
   状态: '已完成',
@@ -66,7 +69,24 @@ const completedOrder: PutawayOrder = {
   ],
 }
 
-const putawayOrders: PutawayOrder[] = [multiPalletOrder, completedOrder]
+const dispatchedOrder: PutawayOrder = {
+  作业单号: 'TK2601010003',
+  运单列表: [{ 运单号: 'DSL26010128302', 件数: 8 }],
+  作业类型: '收货上架',
+  派发状态: '已派发',
+  件数: 8,
+  托数: 1,
+  状态: '待上架',
+  托号: 'PL25010100030',
+  初始库位: null,
+  托明细: [makePallet('PL25010100030', 381, 8, 'DSL26010128302')],
+}
+
+const putawayOrders: PutawayOrder[] = [
+  multiPalletOrder,
+  completedOrder,
+  dispatchedOrder,
+]
 
 const boxIndex = new Map<string, PutawayOrder>()
 
@@ -132,7 +152,11 @@ export function hasPutawayForMixedPallet(托号: string) {
 }
 
 export function listPendingPutawayOrders() {
-  return putawayOrders.filter((item) => item.状态 === '待上架')
+  return putawayOrders.filter(
+    (item) =>
+      PUTAWAY_DISPATCH_LIST_STATUSES.includes(item.派发状态) &&
+      item.状态 === '待上架',
+  )
 }
 
 export function getPutawayOrder(jobNo: string) {
@@ -142,6 +166,7 @@ export function getPutawayOrder(jobNo: string) {
 export type PutawayBoxLookup =
   | { kind: 'missing' }
   | { kind: 'notBound' }
+  | { kind: 'notDispatchable' }
   | { kind: 'alreadyPutaway' }
   | { kind: 'hit'; order: PutawayOrder; boxNo: string; pallet: PutawayPallet }
 
@@ -149,6 +174,10 @@ export function lookupPutawayBox(raw: string): PutawayBoxLookup {
   const boxNo = raw.trim().toUpperCase()
   const order = boxIndex.get(boxNo)
   if (!order) return { kind: 'missing' }
+
+  if (!PUTAWAY_DISPATCH_LIST_STATUSES.includes(order.派发状态)) {
+    return { kind: 'notDispatchable' }
+  }
 
   const pallet = order.托明细.find((item) => item.箱号列表.includes(boxNo))
   if (!pallet) return { kind: 'notBound' }
@@ -194,7 +223,13 @@ export function confirmPutawayPallet(
 
 export function getPutawayWorkContext(jobNo: string) {
   const order = getPutawayOrder(jobNo)
-  if (!order || order.状态 !== '待上架') return null
+  if (
+    !order ||
+    order.状态 !== '待上架' ||
+    !PUTAWAY_DISPATCH_LIST_STATUSES.includes(order.派发状态)
+  ) {
+    return null
+  }
   const pallet =
     order.托明细.find((item) => item.上架状态 === '待上架') ?? null
   if (!pallet) return null

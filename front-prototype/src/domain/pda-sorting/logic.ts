@@ -224,6 +224,7 @@ export function bindPallet(
 export const SCAN_ERROR_MESSAGE: Record<ScanAssignError, string> = {
   missing: '箱号不存在',
   noForecast: '无预报箱号，不可分货',
+  waybillNotSortable: '运单状态不可分货',
   alreadyBound: '该箱已绑托，不可重复扫描',
   alreadyScanned: '该箱已扫描',
   largeTicketMix: '大票不可混托',

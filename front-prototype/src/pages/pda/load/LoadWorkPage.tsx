@@ -16,6 +16,7 @@ import {
   getLoadPlan,
   getLoadScanStats,
   getLoadSession,
+  getLoadWaybillBoxProgress,
   isLoadDriverReady,
   removeLoadLine,
   scanLoadBox,
@@ -71,7 +72,8 @@ export function LoadWorkPage() {
 
   const readonly =
     !TRANSFER_PLAN_LOADABLE_STATUSES.includes(plan.状态) ||
-    plan.出库单状态 === '已出库'
+    plan.出库单状态 === '已出库' ||
+    plan.是否锁单 === '是'
   const showBottom = !readonly && lines.length > 0
 
   const handleScan = (raw: string) => {
@@ -209,7 +211,18 @@ export function LoadWorkPage() {
             />
           </div>
         ) : (
-          lines.map((line) => (
+          lines.map((line) => {
+            const boxProgress = getLoadWaybillBoxProgress(line.运单号, lines)
+            const scanComplete =
+              boxProgress.totalBoxes > 0 &&
+              boxProgress.scannedBoxes >= boxProgress.totalBoxes
+            const progressColor = scanComplete
+              ? token.colorSuccess
+              : boxProgress.scannedBoxes > 0
+                ? token.colorWarning
+                : token.colorTextSecondary
+
+            return (
             <Card
               key={line.运单号}
               size="small"
@@ -230,8 +243,25 @@ export function LoadWorkPage() {
                 ) : null
               }
             >
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>
-                运单号 {line.运单号}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                  marginBottom: 4,
+                }}
+              >
+                <div style={{ fontWeight: 600 }}>运单号 {line.运单号}</div>
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontWeight: 600,
+                    color: progressColor,
+                  }}
+                >
+                  {boxProgress.scannedBoxes}/{boxProgress.totalBoxes}箱
+                </span>
               </div>
               <div style={{ color: token.colorTextSecondary, marginBottom: 4 }}>
                 客户：{line.客户代码}
@@ -241,7 +271,8 @@ export function LoadWorkPage() {
                 {line.体积.toFixed(6)}CBM
               </div>
             </Card>
-          ))
+            )
+          })
         )}
         </div>
       </div>
@@ -249,15 +280,15 @@ export function LoadWorkPage() {
       {showBottom ? (
         <div data-anno="pda-load-work-bottom">
           <PdaBottomBar>
-            <Button style={{ height: 44, flex: 1 }} onClick={handleStage}>
-              装车暂存
+            <Button style={{ height: 44, flex: 1 }} onClick={handleLoadLock}>
+              装车锁定
             </Button>
             <Button
               type="primary"
               style={PDA_PRIMARY_BUTTON_STYLE}
-              onClick={handleLoadLock}
+              onClick={handleStage}
             >
-              装车锁定
+              装车暂存
             </Button>
           </PdaBottomBar>
         </div>

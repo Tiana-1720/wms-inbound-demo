@@ -29,6 +29,7 @@ export type SortingSession = {
 export type ScanAssignError =
   | 'missing'
   | 'noForecast'
+  | 'waybillNotSortable'
   | 'alreadyBound'
   | 'alreadyScanned'
   | 'largeTicketMix'

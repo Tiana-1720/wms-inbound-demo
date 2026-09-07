@@ -66,6 +66,7 @@ export function buildPutawayOrder(
     作业单号,
     运单列表,
     作业类型: '收货上架',
+    派发状态: '待派发',
     件数,
     托数: pallets.length,
     状态: '待上架',

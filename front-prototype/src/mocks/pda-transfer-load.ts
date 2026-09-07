@@ -1,7 +1,8 @@
-import type {
-  TransferLoadDriverInfo,
-  TransferLoadLine,
-  TransferLoadPlan,
+import {
+  OUTBOUND_LOAD_LIST_STATUSES,
+  type TransferLoadDriverInfo,
+  type TransferLoadLine,
+  type TransferLoadPlan,
 } from '@/domain/pda-transfer-load/types'
 import { TRANSFER_PLAN_LOADABLE_STATUSES } from '@/domain/transfer-plan/constants'
 import {
@@ -16,7 +17,10 @@ import {
 type LoadableWaybillOnPallet = {
   运单号: string
   客户代码: string
+  /** 运单总箱数 */
   箱数: number
+  /** 本托上该运单的箱数；混托/多托时用于扫描进度 */
+  本托箱数: number
   重量: number
   体积: number
 }
@@ -39,9 +43,10 @@ const loadablePallets: LoadablePallet[] = [
       {
         运单号: 'DSL26010128343',
         客户代码: 'CUST001',
-        箱数: 30,
-        重量: 125.5,
-        体积: 1.25,
+        箱数: 20,
+        本托箱数: 10,
+        重量: 62.75,
+        体积: 0.625,
       },
     ],
   },
@@ -54,9 +59,10 @@ const loadablePallets: LoadablePallet[] = [
       {
         运单号: 'DSL26010128343',
         客户代码: 'CUST001',
-        箱数: 30,
-        重量: 125.5,
-        体积: 1.25,
+        箱数: 20,
+        本托箱数: 10,
+        重量: 62.75,
+        体积: 0.625,
       },
     ],
   },
@@ -70,6 +76,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128344',
         客户代码: 'CUST002',
         箱数: 30,
+        本托箱数: 30,
         重量: 118.0,
         体积: 1.1,
       },
@@ -89,6 +96,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128302',
         客户代码: 'CUST005',
         箱数: 8,
+        本托箱数: 8,
         重量: 32.0,
         体积: 0.32,
       },
@@ -96,6 +104,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128303',
         客户代码: 'CUST006',
         箱数: 5,
+        本托箱数: 5,
         重量: 20.0,
         体积: 0.2,
       },
@@ -103,6 +112,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128304',
         客户代码: 'CUST007',
         箱数: 6,
+        本托箱数: 6,
         重量: 24.0,
         体积: 0.24,
       },
@@ -118,6 +128,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128346',
         客户代码: 'CUST004',
         箱数: 15,
+        本托箱数: 15,
         重量: 60.0,
         体积: 0.6,
       },
@@ -133,6 +144,7 @@ const loadablePallets: LoadablePallet[] = [
         运单号: 'DSL26010128399',
         客户代码: 'CUST008',
         箱数: 2,
+        本托箱数: 2,
         重量: 8.0,
         体积: 0.08,
       },
@@ -143,10 +155,12 @@ const loadablePallets: LoadablePallet[] = [
 const plans: TransferLoadPlan[] = [
   {
     调拨计划单号: 'AT26010100001',
+    出库单号: 'OB26010100001',
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '待出库',
     出库单状态: '待出库',
+    是否锁单: '否',
     汇总箱数: 0,
     汇总重量: 0,
     汇总体积: 0,
@@ -154,21 +168,23 @@ const plans: TransferLoadPlan[] = [
   },
   {
     调拨计划单号: 'AT26010100002',
+    出库单号: 'OB26010100002',
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '已出库',
     出库单状态: '已出库',
-    汇总箱数: 60,
+    是否锁单: '是',
+    汇总箱数: 50,
     汇总重量: 243.5,
     汇总体积: 2.35,
     明细: [
       {
         运单号: 'DSL26010128343',
         客户代码: 'CUST001',
-        箱数: 30,
+        箱数: 20,
         重量: 125.5,
         体积: 1.25,
-        托号: 'PL25010100001',
+        托号: 'PL25010100001,PL25010100005',
       },
       {
         运单号: 'DSL26010128344',
@@ -182,14 +198,60 @@ const plans: TransferLoadPlan[] = [
   },
   {
     调拨计划单号: 'AT26010100003',
+    出库单号: 'OB26010100003',
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '待出库',
     出库单状态: '待出库',
+    是否锁单: '否',
     汇总箱数: 0,
     汇总重量: 0,
     汇总体积: 0,
     明细: [],
+  },
+  {
+    调拨计划单号: 'AT26010100004',
+    出库单号: 'OB26010100004',
+    调出仓库: 'NC-LS-01',
+    调入仓库: 'DS-JH-01',
+    状态: '已复核',
+    出库单状态: '已复核',
+    是否锁单: '否',
+    汇总箱数: 10,
+    汇总重量: 62.75,
+    汇总体积: 0.625,
+    明细: [
+      {
+        运单号: 'DSL26010128343',
+        客户代码: 'CUST001',
+        箱数: 20,
+        重量: 62.75,
+        体积: 0.625,
+        托号: 'PL25010100001',
+      },
+    ],
+  },
+  {
+    调拨计划单号: 'AT26010100005',
+    出库单号: 'OB26010100005',
+    调出仓库: 'NC-LS-01',
+    调入仓库: 'DS-JH-01',
+    状态: '已复核',
+    出库单状态: '已复核',
+    是否锁单: '是',
+    汇总箱数: 30,
+    汇总重量: 118.0,
+    汇总体积: 1.1,
+    明细: [
+      {
+        运单号: 'DSL26010128344',
+        客户代码: 'CUST002',
+        箱数: 30,
+        重量: 118.0,
+        体积: 1.1,
+        托号: 'PL25010100002',
+      },
+    ],
   },
 ]
 
@@ -278,7 +340,7 @@ function mergeLoadLine(
   ]
   return {
     ...existing,
-    箱数: existing.箱数 + incoming.箱数,
+    箱数: existing.箱数,
     重量: existing.重量 + incoming.重量,
     体积: existing.体积 + incoming.体积,
     托号: palletIds.join(','),
@@ -339,7 +401,11 @@ function toLoadLine(
 function recalcSummary(plan: TransferLoadPlan) {
   const lines = scanSessions.get(plan.调拨计划单号) ?? plan.明细
   plan.明细 = lines
-  plan.汇总箱数 = lines.reduce((sum, item) => sum + item.箱数, 0)
+  plan.汇总箱数 = lines.reduce(
+    (sum, item) =>
+      sum + getLoadWaybillBoxProgress(item.运单号, lines).scannedBoxes,
+    0,
+  )
   plan.汇总重量 = lines.reduce((sum, item) => sum + item.重量, 0)
   plan.汇总体积 = lines.reduce((sum, item) => sum + item.体积, 0)
 }
@@ -349,6 +415,28 @@ export function getLoadScanStats(planNo: string) {
   const 票数 = lines.length
   const 托数 = getScannedPalletIds(lines).size
   return { 票数, 托数 }
+}
+
+/** 运单装车扫描进度：已扫本托箱数累加 / 运单总箱数 */
+export function getLoadWaybillBoxProgress(
+  运单号: string,
+  session: TransferLoadLine[],
+) {
+  const scannedPalletIds = getScannedPalletIds(session)
+  const palletsForWaybill = loadablePallets.filter((pallet) =>
+    pallet.运单列表.some((waybill) => waybill.运单号 === 运单号),
+  )
+  const master = palletsForWaybill[0]?.运单列表.find(
+    (waybill) => waybill.运单号 === 运单号,
+  )
+  const totalBoxes = master?.箱数 ?? 0
+  const scannedBoxes = palletsForWaybill
+    .filter((pallet) => scannedPalletIds.has(pallet.托号))
+    .reduce((sum, pallet) => {
+      const waybill = pallet.运单列表.find((item) => item.运单号 === 运单号)
+      return sum + (waybill?.本托箱数 ?? 0)
+    }, 0)
+  return { scannedBoxes, totalBoxes }
 }
 
 /** 将调拨计划恢复为原型初始数据，并清空本次装车会话 */
@@ -371,8 +459,15 @@ export function resetLoadPlanDemo(planNo: string) {
   driverSessions.delete(planNo)
 }
 
+export function isLoadListVisible(plan: TransferLoadPlan) {
+  return (
+    OUTBOUND_LOAD_LIST_STATUSES.includes(plan.出库单状态) &&
+    plan.是否锁单 === '否'
+  )
+}
+
 export function listPendingLoadPlans() {
-  return plans.filter((item) => item.出库单状态 !== '已出库')
+  return plans.filter(isLoadListVisible)
 }
 
 export function getLoadPlan(planNo: string) {
@@ -526,7 +621,8 @@ export function stageDispatch(planNo: string) {
   if (
     !plan ||
     !TRANSFER_PLAN_LOADABLE_STATUSES.includes(plan.状态) ||
-    plan.出库单状态 === '已出库'
+    plan.出库单状态 === '已出库' ||
+    plan.是否锁单 === '是'
   ) {
     return false
   }
@@ -549,7 +645,8 @@ export function confirmLoadLock(planNo: string) {
   if (
     !plan ||
     !TRANSFER_PLAN_LOADABLE_STATUSES.includes(plan.状态) ||
-    plan.出库单状态 === '已出库'
+    plan.出库单状态 === '已出库' ||
+    plan.是否锁单 === '是'
   ) {
     return false
   }
@@ -563,6 +660,7 @@ export function confirmLoadLock(planNo: string) {
   recalcSummary(plan)
   plan.状态 = '已复核'
   plan.出库单状态 = '已复核'
+  plan.是否锁单 = '是'
 
   applySessionOccupancy(planNo, session)
 
