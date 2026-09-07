@@ -2,6 +2,7 @@ import type { MenuDataItem } from '@ant-design/pro-components'
 
 import {
   INBOUND_ORDER_LIST_PATH,
+  OUTBOUND_ORDER_LIST_PATH,
   PDA_PUTAWAY_PATH,
   PDA_SORTING_PATH,
   PDA_TRANSFER_LOAD_PATH,
@@ -9,7 +10,7 @@ import {
   TRANSFER_PLAN_LIST_PATH,
 } from '@/config/routes'
 
-/** ProLayout 菜单：后台订单管理 + PDA 作业（叶子才可点） */
+/** ProLayout 菜单：对齐现网「出库管理 → 出库列表」 */
 export const appMenuData: MenuDataItem[] = [
   {
     path: '/order',
@@ -26,6 +27,15 @@ export const appMenuData: MenuDataItem[] = [
       {
         path: SORTING_CONFIG_PATH,
         name: '分货参数',
+      },
+    ],
+  },
+  {
+    name: '出库管理',
+    children: [
+      {
+        path: OUTBOUND_ORDER_LIST_PATH,
+        name: '出库列表',
       },
     ],
   },

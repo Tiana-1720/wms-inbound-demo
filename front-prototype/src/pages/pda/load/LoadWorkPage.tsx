@@ -11,7 +11,7 @@ import { ScanInput } from '@/components/pda/ScanInput'
 import { PDA_TRANSFER_LOAD_PATH } from '@/config/routes'
 import { TRANSFER_PLAN_LOADABLE_STATUSES } from '@/domain/transfer-plan/constants'
 import {
-  confirmDispatch,
+  confirmLoadLock,
   getLoadDriverInfo,
   getLoadPlan,
   getLoadScanStats,
@@ -20,6 +20,7 @@ import {
   removeLoadLine,
   scanLoadBox,
   setLoadDriverInfo,
+  stageDispatch,
 } from '@/mocks/pda-transfer-load'
 
 const LOAD_SCAN_ERROR = {
@@ -86,7 +87,16 @@ export function LoadWorkPage() {
     message.error(LOAD_SCAN_ERROR[result.kind])
   }
 
-  const handleDispatch = () => {
+  const handleStage = () => {
+    if (!stageDispatch(planNo)) {
+      message.error('暂存失败，请检查扫描明细与可用库存')
+      return
+    }
+    message.success('暂存成功，已占用库存')
+    setTick((v) => v + 1)
+  }
+
+  const handleLoadLock = () => {
     setDriverModalOpen(true)
   }
 
@@ -97,8 +107,8 @@ export function LoadWorkPage() {
     }
     setLoadDriverInfo(planNo, draftDriver)
     setDriverModalOpen(false)
-    if (!confirmDispatch(planNo)) return
-    message.success('装车成功，已占用库存')
+    if (!confirmLoadLock(planNo)) return
+    message.success('装车锁定成功，已占用库存')
     navigate(PDA_TRANSFER_LOAD_PATH)
   }
 
@@ -119,7 +129,7 @@ export function LoadWorkPage() {
       <Modal
         title="司机信息"
         open={driverModalOpen}
-        okText="确认装车"
+        okText="确认装车锁定"
         cancelText="取消"
         onOk={handleDriverModalConfirm}
         onCancel={() => setDriverModalOpen(false)}
@@ -239,12 +249,15 @@ export function LoadWorkPage() {
       {showBottom ? (
         <div data-anno="pda-load-work-bottom">
           <PdaBottomBar>
+            <Button style={{ height: 44, flex: 1 }} onClick={handleStage}>
+              装车暂存
+            </Button>
             <Button
               type="primary"
               style={PDA_PRIMARY_BUTTON_STYLE}
-              onClick={handleDispatch}
+              onClick={handleLoadLock}
             >
-              装车
+              装车锁定
             </Button>
           </PdaBottomBar>
         </div>

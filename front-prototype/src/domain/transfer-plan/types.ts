@@ -31,6 +31,8 @@ export type TransferPlan = {
   最后修改时间: string
   明细: TransferPlanLine[]
   操作日志: TransferPlanLog[]
+  /** 空单调拨：PC 打印装柜单后标记，确认出库前置 */
+  装柜单已打印?: boolean
 }
 
 /** 列表查询区（Demo PRD §1.3；状态仅通过 Tab 过滤，不进查询区） */

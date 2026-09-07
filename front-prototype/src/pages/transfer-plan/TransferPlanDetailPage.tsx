@@ -1,11 +1,13 @@
 import { FooterToolbar, PageContainer } from '@ant-design/pro-components'
 import {
+  App,
   Button,
   Card,
   Descriptions,
   Result,
   Table,
 } from 'antd'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { TransferPlanStatusTag } from '@/components/transfer-plan/TransferPlanStatusTag'
@@ -14,18 +16,41 @@ import {
   formatVolume,
   formatWeight,
   getWarehouseLabel,
+  TRANSFER_WAREHOUSE_OPTIONS,
+  WAREHOUSE_TYPE_FRANCHISE,
 } from '@/domain/transfer-plan/constants'
-import { getTransferPlan } from '@/domain/transfer-plan/store'
+import {
+  confirmTransferPlanOutbound,
+  getTransferPlan,
+  linkTransferPlanWaybills,
+  printTransferPlanContainerList,
+} from '@/domain/transfer-plan/store'
 import type { TransferPlanLine, TransferPlanLog } from '@/domain/transfer-plan/types'
 
 export function TransferPlanDetailPage() {
   const navigate = useNavigate()
   const { id = '' } = useParams()
-  const plan = getTransferPlan(id)
+  const { message } = App.useApp()
+  const [tick, setTick] = useState(0)
+  const plan = useMemo(() => getTransferPlan(id), [id, tick])
 
   const goList = () => {
     navigate(TRANSFER_PLAN_LIST_PATH)
   }
+
+  const refresh = () => setTick((v) => v + 1)
+
+  const isFranchisePlan = TRANSFER_WAREHOUSE_OPTIONS.some(
+    (item) =>
+      item.code === plan?.调出仓库 && item.type === WAREHOUSE_TYPE_FRANCHISE,
+  )
+
+  const showLinkWaybills =
+    isFranchisePlan && plan && ['待出库', '已复核'].includes(plan.状态)
+  const showPrintContainer =
+    isFranchisePlan && plan?.状态 === '已复核'
+  const showConfirmOutbound =
+    isFranchisePlan && plan?.状态 === '已复核'
 
   if (!plan) {
     return (
@@ -159,6 +184,54 @@ export function TransferPlanDetailPage() {
         </Card>
 
         <FooterToolbar data-anno="transfer-plan-detail-actions">
+          {showLinkWaybills ? (
+            <Button
+              onClick={() => {
+                const result = linkTransferPlanWaybills(plan.调拨计划单号)
+                if (result === 'ok') {
+                  message.success('关联运单成功（原型占位）')
+                  refresh()
+                } else {
+                  message.error('当前状态不可关联运单')
+                }
+              }}
+            >
+              关联运单
+            </Button>
+          ) : null}
+          {showPrintContainer ? (
+            <Button
+              onClick={() => {
+                const result = printTransferPlanContainerList(plan.调拨计划单号)
+                if (result === 'ok') {
+                  message.success('装柜单已打印')
+                  refresh()
+                } else {
+                  message.error('当前状态不可打印装柜单')
+                }
+              }}
+            >
+              打印装柜单
+            </Button>
+          ) : null}
+          {showConfirmOutbound ? (
+            <Button
+              type="primary"
+              onClick={() => {
+                const result = confirmTransferPlanOutbound(plan.调拨计划单号)
+                if (result === 'ok') {
+                  message.success('确认出库成功')
+                  refresh()
+                } else if (result === 'not-printed') {
+                  message.error('请先打印装柜单')
+                } else {
+                  message.error('当前状态不可确认出库')
+                }
+              }}
+            >
+              确认出库
+            </Button>
+          ) : null}
           <Button onClick={goList}>返回列表</Button>
         </FooterToolbar>
       </PageContainer>

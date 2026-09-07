@@ -4,7 +4,14 @@ import type {
   TransferLoadPlan,
 } from '@/domain/pda-transfer-load/types'
 import { TRANSFER_PLAN_LOADABLE_STATUSES } from '@/domain/transfer-plan/constants'
-import { releaseOccupiedByPlan, getOccupyingPlanForBox, occupyBoxes, occupyWaybills } from '@/domain/pda-transfer-load/inventory'
+import {
+  getOccupyingPlanForBox,
+  occupyBoxes,
+  occupyWaybills,
+  releaseBoxes,
+  releaseOccupiedByPlan,
+  releaseWaybills,
+} from '@/domain/pda-transfer-load/inventory'
 
 type LoadableWaybillOnPallet = {
   运单号: string
@@ -139,7 +146,7 @@ const plans: TransferLoadPlan[] = [
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '待出库',
-    出库单状态: '未生成',
+    出库单状态: '待出库',
     汇总箱数: 0,
     汇总重量: 0,
     汇总体积: 0,
@@ -178,7 +185,7 @@ const plans: TransferLoadPlan[] = [
     调出仓库: 'NC-LS-01',
     调入仓库: 'DS-JH-01',
     状态: '待出库',
-    出库单状态: '未生成',
+    出库单状态: '待出库',
     汇总箱数: 0,
     汇总重量: 0,
     汇总体积: 0,
@@ -461,6 +468,29 @@ function collectBoxNosForSession(session: TransferLoadLine[]) {
   return boxNos
 }
 
+function collectBoxNosForPalletIds(palletIds: Set<string>) {
+  const boxNos: string[] = []
+  const waybills: string[] = []
+  for (const pallet of loadablePallets) {
+    if (!palletIds.has(pallet.托号)) continue
+    boxNos.push(...pallet.箱号列表)
+    for (const waybill of pallet.运单列表) {
+      if (!waybills.includes(waybill.运单号)) {
+        waybills.push(waybill.运单号)
+      }
+    }
+  }
+  return { boxNos, waybills }
+}
+
+function applySessionOccupancy(planNo: string, session: TransferLoadLine[]) {
+  occupyBoxes(planNo, collectBoxNosForSession(session))
+  occupyWaybills(
+    planNo,
+    session.map((item) => item.运单号),
+  )
+}
+
 /** 移除整托（混托时同托多票一并移除，不拆票）；多托同票时移除该运单全部已扫托 */
 export function removeLoadLine(planNo: string, 运单号: string) {
   const session = getLoadSession(planNo)
@@ -479,10 +509,42 @@ export function removeLoadLine(planNo: string, 运单号: string) {
       .filter(Boolean)
     return !itemPalletIds.some((id) => palletIds.has(id))
   })
+  const { boxNos, waybills } = collectBoxNosForPalletIds(palletIds)
+  releaseBoxes(planNo, boxNos)
+  releaseWaybills(planNo, waybills)
   commitSession(planNo, next)
+  const plan = getLoadPlan(planNo)
+  if (plan) {
+    plan.明细 = next.map((item) => ({ ...item }))
+    recalcSummary(plan)
+  }
 }
 
-export function confirmDispatch(planNo: string) {
+/** 装车暂存：保存进度、占用箱库存，不锁单据 */
+export function stageDispatch(planNo: string) {
+  const plan = getLoadPlan(planNo)
+  if (
+    !plan ||
+    !TRANSFER_PLAN_LOADABLE_STATUSES.includes(plan.状态) ||
+    plan.出库单状态 === '已出库'
+  ) {
+    return false
+  }
+
+  const session = getLoadSession(planNo)
+  if (session.length === 0) return false
+
+  plan.明细 = session.map((item) => ({ ...item }))
+  recalcSummary(plan)
+  if (plan.出库单状态 !== '已复核') {
+    plan.出库单状态 = '待出库'
+  }
+  applySessionOccupancy(planNo, session)
+  commitSession(planNo, session)
+  return true
+}
+
+export function confirmLoadLock(planNo: string) {
   const plan = getLoadPlan(planNo)
   if (
     !plan ||
@@ -502,15 +564,16 @@ export function confirmDispatch(planNo: string) {
   plan.状态 = '已复核'
   plan.出库单状态 = '已复核'
 
-  occupyBoxes(planNo, collectBoxNosForSession(session))
-  occupyWaybills(
-    planNo,
-    session.map((item) => item.运单号),
-  )
+  applySessionOccupancy(planNo, session)
 
   scanSessions.delete(planNo)
   clearStoredSession(planNo)
   return true
+}
+
+/** @deprecated 使用 confirmLoadLock */
+export function confirmDispatch(planNo: string) {
+  return confirmLoadLock(planNo)
 }
 
 export function getLoadableWaybill(运单号: string) {

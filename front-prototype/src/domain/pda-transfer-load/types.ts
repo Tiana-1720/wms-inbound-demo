@@ -6,7 +6,7 @@ export type TransferLoadDriverInfo = {
   车牌号: string
 }
 
-export type OutboundOrderStatus = '未生成' | '已复核' | '已出库'
+export type OutboundOrderStatus = '待出库' | '已复核' | '已出库'
 
 export type TransferLoadPlanStatus = TransferPlanStatus
 

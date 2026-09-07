@@ -14,6 +14,8 @@ import { PutawayPage } from '@/pages/pda/putaway/PutawayPage'
 import { SortingPage } from '@/pages/pda/sorting/SortingPage'
 import { SortingConfigPage } from '@/pages/settings/SortingConfigPage'
 import { PlaceholderPage } from '@/pages/PlaceholderPage'
+import { OutboundLinkWaybillPage } from '@/pages/outbound/OutboundLinkWaybillPage'
+import { OutboundOrderListPage } from '@/pages/outbound/OutboundOrderListPage'
 import { TransferPlanCreatePage } from '@/pages/transfer-plan/TransferPlanCreatePage'
 import { TransferPlanDetailPage } from '@/pages/transfer-plan/TransferPlanDetailPage'
 import { TransferPlanListPage } from '@/pages/transfer-plan/TransferPlanListPage'
@@ -58,6 +60,12 @@ export function AppRouter() {
         <Route
           path="orders/receiving/:id/edit"
           element={<PlaceholderPage title="编辑收货订单" />}
+        />
+
+        <Route path="order/Outbound" element={<OutboundOrderListPage />} />
+        <Route
+          path="order/Outbound/:id/link-waybill"
+          element={<OutboundLinkWaybillPage />}
         />
 
         <Route path="order/TransferPlan" element={<TransferPlanListPage />} />

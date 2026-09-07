@@ -26,6 +26,11 @@
       "scope": "pda-load",
       "config": "./pda-load/annotation.config.json",
       "order": 5
+    },
+    {
+      "scope": "outbound-order",
+      "config": "./outbound-order/annotation.config.json",
+      "order": 6
     }
   ],
   "runtime": {

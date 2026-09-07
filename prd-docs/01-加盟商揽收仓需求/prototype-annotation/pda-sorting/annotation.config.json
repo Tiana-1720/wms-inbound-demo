@@ -30,13 +30,8 @@
       "page": "/pda/inbound/sorting"
     },
     {
-      "id": "REQ-PDA-SORT-004",
-      "source": "../04-05-分货_Demo.md#§6 运单信息区",
-      "page": "/pda/inbound/sorting"
-    },
-    {
       "id": "REQ-PDA-SORT-005",
-      "source": "../04-05-分货_Demo.md#§7–§9 作业格与绑托",
+      "source": "../04-05-分货_Demo.md#§6–§8 作业格与绑托",
       "page": "/pda/inbound/sorting"
     },
     {
@@ -45,13 +40,8 @@
       "page": "/pda/inbound/sorting"
     },
     {
-      "id": "REQ-PDA-SORT-007",
-      "source": "../02-01-收货订单-入库单字段清单.md#§一、§二",
-      "page": "/pda/inbound/sorting"
-    },
-    {
       "id": "REQ-PDA-SORT-MOCK",
-      "source": "../04-05-分货_Demo.md#§12 Mock 数据规格",
+      "source": "../04-05-分货_Demo.md#§11 Mock 数据规格",
       "page": "/pda/inbound/sorting"
     }
   ],
@@ -85,16 +75,6 @@
       "markdownFile": "pages/pda-sorting.md",
       "blockId": "2",
       "sourceRefs": ["REQ-PDA-SORT-002", "REQ-PDA-SORT-003"]
-    },
-    {
-      "id": "3",
-      "page": "/pda/inbound/sorting",
-      "moduleName": "运单信息区",
-      "order": 3,
-      "target": { "selector": "[data-anno='pda-sorting-waybill']", "fallbackSelectors": [] },
-      "markdownFile": "pages/pda-sorting.md",
-      "blockId": "3",
-      "sourceRefs": ["REQ-PDA-SORT-004", "REQ-PDA-SORT-007"]
     },
     {
       "id": "4",

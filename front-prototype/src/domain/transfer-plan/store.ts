@@ -18,8 +18,23 @@ function nowText() {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
-function findWarehouse(code: string) {
-  return TRANSFER_WAREHOUSE_OPTIONS.find((item) => item.code === code)
+function appendPlanLog(plan: TransferPlan, 操作内容: string, 操作人 = CURRENT_OPERATOR) {
+  const updatedAt = nowText()
+  plan.最后修改人 = 操作人
+  plan.最后修改时间 = updatedAt
+  plan.操作日志 = [
+    {
+      操作内容,
+      操作时间: updatedAt,
+      操作人,
+    },
+    ...plan.操作日志,
+  ]
+}
+
+function isFranchiseTransferPlan(plan: TransferPlan) {
+  const fromWarehouse = findWarehouse(plan.调出仓库)
+  return fromWarehouse?.type === WAREHOUSE_TYPE_FRANCHISE
 }
 
 function nextPlanNo(createdAt: string) {
@@ -74,6 +89,11 @@ export function createTransferPlan(调出仓库: string, 调入仓库: string) {
         操作时间: createdAt,
         操作人: CURRENT_OPERATOR,
       },
+      {
+        操作内容: '同步生成空出库单（待出库、明细空）',
+        操作时间: createdAt,
+        操作人: CURRENT_OPERATOR,
+      },
     ],
   }
 
@@ -102,4 +122,41 @@ export function cancelTransferPlan(planNo: string) {
   ]
 
   return 'ok' as const
+}
+
+/** PC 关联运单（空单调拨兜底；原型仅记日志） */
+export function linkTransferPlanWaybills(planNo: string) {
+  const plan = getTransferPlan(planNo)
+  if (!plan || !isFranchiseTransferPlan(plan)) return 'not-applicable' as const
+  if (!['待出库', '已复核'].includes(plan.状态)) return 'bad-status' as const
+
+  appendPlanLog(plan, 'PC 关联运单')
+  return 'ok' as const
+}
+
+/** PC 打印装柜单（不变库存） */
+export function printTransferPlanContainerList(planNo: string) {
+  const plan = getTransferPlan(planNo)
+  if (!plan || !isFranchiseTransferPlan(plan)) return 'not-applicable' as const
+  if (plan.状态 !== '已复核') return 'bad-status' as const
+
+  plan.装柜单已打印 = true
+  appendPlanLog(plan, 'PC 打印装柜单')
+  return 'ok' as const
+}
+
+/** PC 确认出库（须先打印装柜单） */
+export function confirmTransferPlanOutbound(planNo: string) {
+  const plan = getTransferPlan(planNo)
+  if (!plan || !isFranchiseTransferPlan(plan)) return 'not-applicable' as const
+  if (plan.状态 !== '已复核') return 'bad-status' as const
+  if (!plan.装柜单已打印) return 'not-printed' as const
+
+  plan.状态 = '已出库'
+  appendPlanLog(plan, 'PC 确认出库')
+  return 'ok' as const
+}
+
+function findWarehouse(code: string) {
+  return TRANSFER_WAREHOUSE_OPTIONS.find((item) => item.code === code)
 }

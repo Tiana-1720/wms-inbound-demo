@@ -11,7 +11,6 @@ import {
 } from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 
-import { StatusTag } from '@/components/inbound-order/StatusTag'
 import { PdaNavBar } from '@/components/pda/PdaNavBar'
 import { ScanInput } from '@/components/pda/ScanInput'
 import {
@@ -25,10 +24,8 @@ import {
   SCAN_ERROR_MESSAGE,
   appendBoxToSession,
   bindPallet,
-  countWaybillOnPallet,
   createSession,
   getPalletWaybills,
-  isSmallTicket,
   resolveTargetPalletIndex,
   validatePalletBind,
 } from '@/domain/pda-sorting/logic'
@@ -78,14 +75,6 @@ function isBoxScanned(session: SortingSession, boxNo: string) {
   )
 }
 
-function countWaybillScanned(session: SortingSession, 运单号: string) {
-  return session.pallets.reduce(
-    (sum, pallet) =>
-      sum + pallet.boxes.filter((item) => item.运单号 === 运单号).length,
-    0,
-  )
-}
-
 function hasScannedData(session: SortingSession | null) {
   return !!session?.pallets.some((pallet) => pallet.boxes.length > 0)
 }
@@ -109,7 +98,6 @@ export function SortingPage() {
   const [session, setSession] = useState<SortingSession | null>(null)
   const [palletSeq, setPalletSeq] = useState(1)
   const [loading, setLoading] = useState(false)
-  const [lastWaybill, setLastWaybill] = useState<SortingWaybill | null>(null)
   const [dropConfirm, setDropConfirm] = useState<DropConfirmState | null>(null)
   const [sortMockTick, setSortMockTick] = useState(0)
 
@@ -148,7 +136,6 @@ export function SortingPage() {
     setSlotCount(next)
     setSession(createSession(next))
     setPalletSeq(1)
-    setLastWaybill(null)
     setPageReady(true)
     setSetupOpen(false)
   }
@@ -159,7 +146,6 @@ export function SortingPage() {
     setSortMockTick((v) => v + 1)
     setSession(createSession(slotCount))
     setPalletSeq(1)
-    setLastWaybill(null)
   }
 
   const handleSlotFull = (palletIndex: number) => {
@@ -202,7 +188,6 @@ export function SortingPage() {
       运单号: waybill.运单号,
     })
     setSession(nextSession)
-    setLastWaybill(waybill)
   }
 
   const handleScan = async (raw: string) => {
@@ -261,10 +246,6 @@ export function SortingPage() {
     setDropConfirm(null)
   }
 
-  const scannedForLastWaybill = lastWaybill
-    ? countWaybillScanned(session ?? createSession(slotCount), lastWaybill.运单号)
-    : 0
-
   if (!pageReady) {
     return (
       <>
@@ -279,7 +260,7 @@ export function SortingPage() {
         >
           <div data-anno="pda-sorting-setup-modal">
             <div style={{ marginBottom: 12, color: token.colorTextSecondary }}>
-              设置本次分货并行托数（1–10）
+              设置本次分货并行托数（1–99，默认 5）
             </div>
             <InputNumber
               min={SORTING_SLOT_COUNT_MIN}
@@ -404,43 +385,6 @@ export function SortingPage() {
       {!loading && session ? (
         <>
           <div
-            data-anno="pda-sorting-waybill"
-            style={{
-              flexShrink: 0,
-              margin: 12,
-              marginBottom: 0,
-              padding: '12px 16px',
-              ...panelStyle,
-            }}
-          >
-            {lastWaybill ? (
-              <>
-                <div>运单号：{lastWaybill.运单号}</div>
-                <div style={{ marginTop: 8 }}>
-                  预报：{lastWaybill.预报箱数}箱　已扫：{scannedForLastWaybill}箱　可扫：
-                  {Math.max(lastWaybill.预报箱数 - scannedForLastWaybill, 0)}箱　
-                  {isSmallTicket(
-                    lastWaybill.预报箱数,
-                    params.smallTicketThreshold,
-                  ) ? (
-                    <Tag color="cyan">小票</Tag>
-                  ) : (
-                    <Tag color="purple">大票</Tag>
-                  )}
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  状态：
-                  <StatusTag status={lastWaybill.状态} />
-                </div>
-              </>
-            ) : (
-              <div style={{ color: token.colorTextSecondary }}>
-                扫描箱号后展示运单信息
-              </div>
-            )}
-          </div>
-
-          <div
             data-anno="pda-sorting-pallets"
             style={{
               flex: 1,
@@ -490,38 +434,6 @@ export function SortingPage() {
                   }}
                   styles={{ body: { paddingBottom: pallet.boxes.length > 0 ? 8 : 12 } }}
                 >
-                  {waybills.length > 0 ? (
-                    <div
-                      style={{
-                        marginBottom: 8,
-                        fontSize: 12,
-                        color: token.colorTextSecondary,
-                      }}
-                    >
-                      {waybills.map((no) => {
-                        const wb = waybillMap.get(no)
-                        if (!wb) return null
-                        const scanned = countWaybillOnPallet(pallet, no)
-                        const complete =
-                          !isSmallTicket(
-                            wb.预报箱数,
-                            params.smallTicketThreshold,
-                          ) || scanned >= wb.预报箱数
-                        return (
-                          <div
-                            key={no}
-                            style={{
-                              color: complete
-                                ? token.colorTextSecondary
-                                : token.colorError,
-                            }}
-                          >
-                            {no}：{scanned}/{wb.预报箱数}箱
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : null}
                   {pallet.boxes.length === 0 ? (
                     <div style={{ color: token.colorTextSecondary }}>
                       暂无扫描箱号

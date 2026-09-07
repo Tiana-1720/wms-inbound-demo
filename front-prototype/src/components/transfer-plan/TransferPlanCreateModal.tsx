@@ -167,7 +167,7 @@ export function TransferPlanCreateModal({
             type="secondary"
             style={{ marginBottom: 0, marginTop: 8 }}
           >
-            明细由 PDA 装车扫描回写，创建时不预填运单
+            建计划同时生成空出库单；明细由 PDA 装车暂存/锁定或 PC 关联运单回写，创建时不预填运单
           </Typography.Paragraph>
         </div>
       </div>

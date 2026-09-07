@@ -37,6 +37,23 @@ export function occupyWaybills(planNo: string, 运单号列表: string[]) {
   }
 }
 
+export function releaseBoxes(planNo: string, 箱号列表: string[]) {
+  for (const 箱号 of 箱号列表) {
+    const key = 箱号.trim().toUpperCase()
+    if (occupiedByBox.get(key) === planNo) {
+      occupiedByBox.delete(key)
+    }
+  }
+}
+
+export function releaseWaybills(planNo: string, 运单号列表: string[]) {
+  for (const 运单号 of 运单号列表) {
+    if (occupiedByWaybill.get(运单号) === planNo) {
+      occupiedByWaybill.delete(运单号)
+    }
+  }
+}
+
 /** PC 确认出库时释放占用并实扣（原型占位） */
 export function releaseOccupiedByPlan(planNo: string) {
   for (const [箱号, holder] of occupiedByBox.entries()) {

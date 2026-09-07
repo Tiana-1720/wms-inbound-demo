@@ -6,6 +6,13 @@ export function getInboundOrderDetailPath(receiptNo: string) {
   return `${INBOUND_ORDER_LIST_PATH}/${receiptNo}`
 }
 
+/** 出库单列表页路由（Demo PRD 04-08 §1.1） */
+export const OUTBOUND_ORDER_LIST_PATH = '/order/Outbound'
+
+export function getOutboundLinkWaybillPath(outboundNo: string) {
+  return `${OUTBOUND_ORDER_LIST_PATH}/${outboundNo}/link-waybill`
+}
+
 /** 调拨计划列表页路由（Demo PRD §1.1） */
 export const TRANSFER_PLAN_LIST_PATH = '/order/TransferPlan'
 
