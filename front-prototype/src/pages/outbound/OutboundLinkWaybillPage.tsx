@@ -3,22 +3,20 @@ import {
   App,
   Button,
   Card,
-  Descriptions,
+  Col,
+  Form,
   Input,
   Modal,
   Result,
+  Row,
   Space,
   Table,
 } from 'antd'
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import { OutboundOrderStatusTag } from '@/components/outbound-order/OutboundOrderStatusTag'
-import {
-  OUTBOUND_ORDER_LIST_PATH,
-  getTransferPlanDetailPath,
-} from '@/config/routes'
-import { displayValue } from '@/domain/outbound-order/filter'
+import { OUTBOUND_ORDER_LIST_PATH } from '@/config/routes'
 import {
   getOutboundOrder,
   listCandidateWaybills,
@@ -28,7 +26,6 @@ import type { CandidateWaybill, OutboundOrderLine } from '@/domain/outbound-orde
 import {
   formatVolume,
   formatWeight,
-  getWarehouseLabel,
 } from '@/domain/transfer-plan/constants'
 
 const waybillTableColumns = [
@@ -259,45 +256,65 @@ export function OutboundLinkWaybillPage() {
         style={{ paddingBottom: 80 }}
       >
         <Card
-          title="出库单信息"
           data-anno="outbound-link-waybill-header"
           style={{ marginBottom: 16 }}
+          styles={{ body: { paddingBottom: 8 } }}
         >
-          <Descriptions column={3}>
-            <Descriptions.Item label="出库单号">
-              {order.出库单号}
-            </Descriptions.Item>
-            <Descriptions.Item label="计划单号">
-              {order.计划单号}
-            </Descriptions.Item>
-            <Descriptions.Item label="调拨计划单号">
-              {order.调拨计划单号 ? (
-                <Link to={getTransferPlanDetailPath(order.调拨计划单号)}>
-                  {order.调拨计划单号}
-                </Link>
-              ) : (
-                displayValue(null)
-              )}
-            </Descriptions.Item>
-            <Descriptions.Item label="归属仓库">
-              {getWarehouseLabel(order.归属仓库)}
-            </Descriptions.Item>
-            <Descriptions.Item label="状态">
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 48,
+              paddingBottom: 16,
+              marginBottom: 16,
+              borderBottom: '1px solid #f0f0f0',
+            }}
+          >
+            <div>
+              <span style={{ color: 'rgba(0,0,0,0.45)' }}>出库计划号：</span>
+              <span>{order.计划单号}</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ color: 'rgba(0,0,0,0.45)' }}>状态：</span>
               <OutboundOrderStatusTag status={order.状态} />
-            </Descriptions.Item>
-            <Descriptions.Item label="司机">
-              {displayValue(order.司机)}
-            </Descriptions.Item>
-            <Descriptions.Item label="车牌号">
-              {displayValue(order.车牌号)}
-            </Descriptions.Item>
-            <Descriptions.Item label="电话">
-              {displayValue(order.电话)}
-            </Descriptions.Item>
-            <Descriptions.Item label="备注" span={2}>
-              {displayValue(order.备注)}
-            </Descriptions.Item>
-          </Descriptions>
+            </div>
+          </div>
+          <Form layout="vertical" disabled>
+            <Row gutter={16}>
+              <Col span={6}>
+                <Form.Item label="柜号">
+                  <Input
+                    placeholder="请输入"
+                    value={order.柜号 ?? ''}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item label="司机">
+                  <Input
+                    placeholder="请输入"
+                    value={order.司机 ?? ''}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item label="电话">
+                  <Input
+                    placeholder="请输入"
+                    value={order.电话 ?? ''}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={6}>
+                <Form.Item label="车牌号">
+                  <Input
+                    placeholder="请输入"
+                    value={order.车牌号 ?? ''}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
         </Card>
 
         {canEdit ? (

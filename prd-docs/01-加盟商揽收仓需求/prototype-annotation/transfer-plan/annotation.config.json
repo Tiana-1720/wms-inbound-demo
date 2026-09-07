@@ -1,79 +1,78 @@
-{
-  "version": 1,
-  "title": "调拨计划 · 原型标注",
-  "scope": "transfer-plan",
-  "sourceBase": ".",
-  "pageEntry": "- 管理后台 → **订单管理 → 调拨计划**\n- 路径 `/order/TransferPlan`",
-  "runtime": {
-    "zIndexBase": 2147480000,
-    "initialMode": "annotate"
-  },
-  "mermaid": {
-    "enabled": true,
-    "src": "",
-    "options": {}
-  },
-  "sourceRequirements": [
-    {
-      "id": "REQ-TP-CREATE-001",
-      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§5.2 动作「新增」",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-002",
-      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§3.2 / §6.1 / §6.4（R02/R03/R16）",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-003",
-      "source": "../02-02-调拨计划单字段清单.md#§一 头部字段",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-004",
-      "source": "../04-03-调拨计划_Demo_新增页.md#§2.2 弹窗底部操作栏",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-005",
-      "source": "../04-03-调拨计划_Demo_新增页.md#§2.3 弹窗表单区",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-006",
-      "source": "../04-03-调拨计划_Demo_新增页.md#§2.4 校验与反馈",
-      "page": "/order/TransferPlan"
-    },
-    {
-      "id": "REQ-TP-CREATE-007",
-      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#R29",
-      "page": "/order/TransferPlan"
-    }
-  ],
-  "annotations": [
-    {
-      "id": "4",
-      "page": "/order/TransferPlan",
-      "routeMatcher": "^/order/TransferPlan(/new)?$",
-      "moduleName": "新增弹窗 · 准入保存与仓库",
-      "order": 4,
-      "target": {
-        "selector": "[data-anno='transfer-plan-create-page']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/transfer-plan-create.md",
-      "blockId": "4",
-      "pageEntry": "- 调拨计划列表 → 工具条「**新增**」（仅总部作业部）\n- 或路径 `/order/TransferPlan/new`（无权限则重定向回列表）",
-      "sourceRefs": [
-        "REQ-TP-CREATE-001",
-        "REQ-TP-CREATE-002",
-        "REQ-TP-CREATE-003",
-        "REQ-TP-CREATE-004",
-        "REQ-TP-CREATE-005",
-        "REQ-TP-CREATE-006",
-        "REQ-TP-CREATE-007"
-      ]
-    }
-  ]
-}
-
+{
+  "version": 1,
+  "title": "调拨计划 · 原型标注",
+  "scope": "transfer-plan",
+  "sourceBase": ".",
+  "pageEntry": "- 管理后台 → **订单管理 → 调拨计划**\n- 路径 `/order/TransferPlan`",
+  "runtime": {
+    "zIndexBase": 2147480000,
+    "initialMode": "annotate"
+  },
+  "mermaid": {
+    "enabled": true,
+    "src": "",
+    "options": {}
+  },
+  "sourceRequirements": [
+    {
+      "id": "REQ-TP-CREATE-001",
+      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§5.2 动作「新增」",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-002",
+      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#§3.2 / §6.1 / §6.4（R02/R03/R16）",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-003",
+      "source": "../02-02-调拨计划单字段清单.md#§一 头部字段",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-004",
+      "source": "../04-03-调拨计划_Demo_新增页.md#§2.2 弹窗底部操作栏",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-005",
+      "source": "../04-03-调拨计划_Demo_新增页.md#§2.3 弹窗表单区",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-006",
+      "source": "../04-03-调拨计划_Demo_新增页.md#§2.4 校验与反馈",
+      "page": "/order/TransferPlan"
+    },
+    {
+      "id": "REQ-TP-CREATE-007",
+      "source": "../03-01-加盟商揽收仓管理后台主PRD.md#R29",
+      "page": "/order/TransferPlan"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "0",
+      "page": "/order/TransferPlan",
+      "routeMatcher": "^/order/TransferPlan(/new)?$",
+      "moduleName": "调拨计划新增弹窗",
+      "order": 0,
+      "target": {
+        "selector": "[data-anno='transfer-plan-create-page']",
+        "fallbackSelectors": []
+      },
+      "markdownFile": "pages/transfer-plan-create.md",
+      "blockId": "0",
+      "pageEntry": "- 调拨计划列表 → 工具条「**新增**」（仅总部作业部）\n- 或路径 `/order/TransferPlan/new`（无权限则重定向回列表）",
+      "sourceRefs": [
+        "REQ-TP-CREATE-001",
+        "REQ-TP-CREATE-002",
+        "REQ-TP-CREATE-003",
+        "REQ-TP-CREATE-004",
+        "REQ-TP-CREATE-005",
+        "REQ-TP-CREATE-006",
+        "REQ-TP-CREATE-007"
+      ]
+    }
+  ]
+}

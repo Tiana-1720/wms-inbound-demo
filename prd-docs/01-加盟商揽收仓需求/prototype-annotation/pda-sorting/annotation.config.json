@@ -49,59 +49,31 @@
     {
       "id": "0",
       "page": "/pda/inbound/sorting",
-      "moduleName": "绑托规则",
+      "moduleName": "分货绑托页",
       "order": 0,
-      "target": { "selector": "[data-anno='pda-sorting-page']", "fallbackSelectors": [] },
+      "target": {
+        "selector": "[data-anno='pda-sorting-page']",
+        "fallbackSelectors": []
+      },
       "markdownFile": "pages/pda-sorting.md",
       "blockId": "0",
-      "sourceRefs": ["REQ-PDA-SORT-003"]
-    },
-    {
-      "id": "1",
-      "page": "/pda/inbound/sorting",
-      "moduleName": "作业托数弹窗",
-      "order": 1,
-      "target": { "selector": "[data-anno='pda-sorting-setup-modal']", "fallbackSelectors": [] },
-      "markdownFile": "pages/pda-sorting.md",
-      "blockId": "1",
-      "sourceRefs": ["REQ-PDA-SORT-001", "REQ-PDA-SORT-003"]
-    },
-    {
-      "id": "2",
-      "page": "/pda/inbound/sorting",
-      "moduleName": "扫描区与校验",
-      "order": 2,
-      "target": { "selector": "[data-anno='pda-sorting-scan']", "fallbackSelectors": [] },
-      "markdownFile": "pages/pda-sorting.md",
-      "blockId": "2",
-      "sourceRefs": ["REQ-PDA-SORT-002", "REQ-PDA-SORT-003"]
-    },
-    {
-      "id": "4",
-      "page": "/pda/inbound/sorting",
-      "moduleName": "托列表与确认绑托",
-      "order": 4,
-      "target": { "selector": "[data-anno='pda-sorting-pallets']", "fallbackSelectors": [] },
-      "markdownFile": "pages/pda-sorting.md",
-      "blockId": "4",
-      "sourceRefs": ["REQ-PDA-SORT-005", "REQ-PDA-SORT-003"]
-    },
-    {
-      "id": "5",
-      "page": "/pda/inbound/sorting",
-      "moduleName": "落托确认弹窗",
-      "order": 5,
-      "target": { "selector": "[data-anno='pda-sorting-drop-confirm']", "fallbackSelectors": [] },
-      "markdownFile": "pages/pda-sorting.md",
-      "blockId": "5",
-      "sourceRefs": ["REQ-PDA-SORT-006"]
+      "sourceRefs": [
+        "REQ-PDA-SORT-001",
+        "REQ-PDA-SORT-002",
+        "REQ-PDA-SORT-003",
+        "REQ-PDA-SORT-005",
+        "REQ-PDA-SORT-006"
+      ]
     },
     {
       "id": "A1",
       "page": "/pda/inbound/sorting",
       "moduleName": "原型 Mock · 可扫描箱号",
-      "order": 6,
-      "target": { "selector": "[data-anno='pda-sorting-scan']", "fallbackSelectors": [] },
+      "order": 1,
+      "target": {
+        "selector": "[data-anno='pda-sorting-scan']",
+        "fallbackSelectors": []
+      },
       "markdownFile": "pages/pda-sorting.md",
       "blockId": "A1",
       "sourceRefs": ["REQ-PDA-SORT-MOCK"]

@@ -10,7 +10,8 @@ from typing import Optional
 SCOPE_PATTERN = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 HEADING_PATTERN = re.compile(r"^###\s+(.+)$")
 PAGE_ENTRY_PREFIXES = ("页面入口",)
-CHANGE_LOGIC_PREFIXES = ("业务定义", "改动逻辑")
+CHANGE_LOGIC_PREFIX = "改动逻辑"
+LEGACY_CHANGE_LOGIC_PREFIXES = ("业务定义",)
 PAGE_MODE_PREFIXES = ("页面模式",)
 INTERACTION_PREFIXES = ("交互规则",)
 DEV_NOTE_PREFIXES = ("研发备注",)
@@ -51,14 +52,17 @@ def prepare_display_markdown(markdown: str, page_entry: str = "") -> str:
     preamble, sections = split_markdown_sections(markdown)
     page_entry_body = ""
     change_logic_body = ""
+    legacy_change_logic_body = ""
     page_mode_body = ""
     interaction_body = ""
     other_sections: list[tuple[str, str]] = []
     for title, body in sections:
         if starts_with_any(title, PAGE_ENTRY_PREFIXES):
             page_entry_body = body
-        elif starts_with_any(title, CHANGE_LOGIC_PREFIXES):
+        elif starts_with_any(title, (CHANGE_LOGIC_PREFIX,)):
             change_logic_body = body
+        elif starts_with_any(title, LEGACY_CHANGE_LOGIC_PREFIXES):
+            legacy_change_logic_body = body
         elif starts_with_any(title, PAGE_MODE_PREFIXES):
             page_mode_body = body
         elif starts_with_any(title, INTERACTION_PREFIXES):
@@ -70,7 +74,7 @@ def prepare_display_markdown(markdown: str, page_entry: str = "") -> str:
     if not page_entry_body and page_entry.strip():
         page_entry_body = page_entry.strip()
     if not change_logic_body:
-        change_logic_body = page_mode_body or interaction_body
+        change_logic_body = legacy_change_logic_body or page_mode_body or interaction_body
     parts = []
     if preamble:
         parts.append(preamble)

@@ -71,15 +71,34 @@ When reading PRDs, extract:
 
 ## Aggregation Rules
 
-Aggregate by what a developer would implement together:
+Default to the **page-global profile** (aligned with `outbound-order/pages/outbound-link-waybill.md`) unless the page is a multi-step PDA workflow that still needs zone-level badges.
 
-- Page shell and page-level rules: one badge on page header or root container only when mode entry, save or submit boundaries, dirty-form handling, or cross-field processing would otherwise be scattered across child modules.
+### Page-global profile (default)
+
+- One annotation badge `id=0` on the page root container (`data-anno='{page}-page'`).
+- Merge all page rules, partitions, modals, and bottom actions into this single block.
+- Do **not** create child badges `1`–`5` for header / filter / table / modal / footer when the whole page ships together.
+- Use `### 页面分区` table (`分区 | 要点`) to summarize UI areas instead of a `子模块标注` corner-badge matrix.
+- Put cross-cutting workflow context (for example `空单调拨·出库下推`) in an optional extra `###` section after `页面分区`.
+- Reserve supplemental ids `A1`, `A2` only for Mock data, acceptance shortcuts, or rules that do not belong in the page-global block.
+
+### Multi-badge profile (exception)
+
+Use only when zones are implemented and reviewed independently, typically PDA scan / work / bottom areas:
+
+- Keep `id=0` as a short overview with optional `子模块标注` pointer table.
+- Add one badge per independent zone (`1`, `2`, `A1`, …).
+- Avoid parent/child duplication: if a rule is already in `id=0`, do not repeat it in a child badge.
+
+### Legacy module aggregation (lists / simple CRUD)
+
+When neither profile above applies:
+
 - Filter area: one badge for all inputs, reset, query, and default behavior.
 - Table: one badge for columns, row operations, status display, sorting, and empty/error states.
 - Tabs: one badge for all tab switching and tab-specific loading rules.
 - Form section: one badge per coherent field group, not per field unless a field has complex standalone rules.
 - Modal/drawer: one badge on modal header or container.
-- Button-only annotation: allowed only when the button has unique flow, permission, or side effects.
 
 Avoid duplicate badges on a parent and child when the child logic is already fully covered by the parent annotation.
 
@@ -103,14 +122,15 @@ Use a compact table with only PRD-confirmed columns that matter to implementatio
 
 ### Page-global rules
 
-Add one page-global block only for forms or workflows with cross-field handling. Keep it to four short sections as applicable:
+For the default page-global profile, write `### 改动逻辑` directly as a numbered list. Each item starts with a short **bold label**:
 
-1. `页面模式`：新增/编辑准入、默认状态、字段锁定。
-2. `提交边界`：保存草稿与提交的校验范围和阻断条件。
-3. `结果处理`：成功后的停留页、跳转、刷新和反馈。
-4. `离开处理`：未保存改动、取消或返回的规则。
+1. **{场景/背景}**：…
+2. **前置条件**：入口、状态、权限、可见性。
+3. **保存规则** / **提交边界**：校验口径、状态影响、库存/下游副作用。
 
-Do not repeat these rules in every field-group block. Ordinary read-only pages and simple lists do not need a page-global badge.
+Legacy blocks may still use hidden source sections (`页面模式`、`提交边界`、`结果处理`、`离开处理`、`交互规则`); the compiler maps them into popup `改动逻辑` only when `改动逻辑` is absent. Prefer authoring `改动逻辑` explicitly for new pages.
+
+Do not repeat page-global rules in `页面分区` rows. Ordinary read-only pages and simple lists still use one `id=0` badge when they have incremental business rules.
 
 ### Component behavior
 
@@ -118,13 +138,77 @@ Treat established design-system behavior as implicit. Annotate a component only 
 
 ## Markdown Block Shape
 
-Use this structure unless the target project already has a stronger convention:
+### Page-global profile (default)
+
+```md
+<!-- anno:start id=0 page=/order/Outbound/:id/link-waybill target=outbound-link-waybill-page -->
+## 需求描述：【关联运单页】
+
+> 来源：04-09-出库-关联运单.md；03-01 §5.3、R14/R20/R22/R50；02-04 出库单字段清单；04-08 §1.5.3
+
+### 页面入口
+
+- 出库列表 → 空单调拨行「更多」→ **关联运单**
+- 路径 `/order/Outbound/{出库单号}/link-waybill`
+
+### 改动逻辑
+
+1. **PDA 无法扫描时的 PC 兜底**
+2. **前置条件**：待出库或已复核状态可点击「关联运单」；**已出库**或**已锁单**后不显示此按钮。
+3. **保存规则**：保存时校验可用库存（R14）——当前仓库须有所选运单的可用库存；**箱库存=已占用**或**查不到该仓库库存**，均视为不可用。保存后状态不变，仅建关联并将箱库存→已占用；须再到调拨详情手动锁单。
+
+### 页面分区
+
+| 分区 | 要点 |
+| --- | --- |
+| 出库单信息 | 两行只读：计划号+状态；柜号、司机、电话、车牌 |
+| 选择运单 | 按钮打开弹窗；候选=已上架库存；支持运单号精确/多号搜索 |
+| 运单明细 | 只读表：历史+待保存合并；空态「暂无关联运单」 |
+| 底部操作 | 取消返回列表；确定提交关联 |
+
+### 空单调拨·出库下推（本页）
+
+| 阶段 | 系统行为 |
+| --- | --- |
+| **PC 关联运单** | 整票关联；状态不变；箱库存→已占用；须手动锁单 |
+
+### 研发备注
+
+- 挂载点：`[data-anno='outbound-link-waybill-page']`。
+- 不展示：确认出库、打印装柜单、手动锁单（在列表或调拨详情）。
+<!-- anno:end id=0 -->
+```
+
+Config shape for page-global pages: one annotation `id=0`, all `sourceRefs` on that block, `moduleName` = page title.
+
+```json
+{
+  "sourceRequirements": [
+    { "id": "REQ-OUTBOUND-LINK-001", "source": "../04-09-出库-关联运单.md#§2.1", "page": "/order/Outbound/:id/link-waybill" }
+  ],
+  "annotations": [
+    {
+      "id": "0",
+      "page": "/order/Outbound/:id/link-waybill",
+      "moduleName": "关联运单页",
+      "target": { "selector": "[data-anno='outbound-link-waybill-page']" },
+      "markdownFile": "pages/outbound-link-waybill.md",
+      "blockId": "0",
+      "sourceRefs": ["REQ-OUTBOUND-LINK-001"]
+    }
+  ]
+}
+```
+
+### Legacy / field-group profile
+
+Use when the target project already follows the older shape or the page is not a full-screen workflow:
 
 ```md
 <!-- anno:start id=1 page=/products target=product-table -->
 ## 需求描述：【商品列表与行操作】
 
-> 来源：商品管理PRD.md#商品查询、商品管理_Demo_列表页.md#表格与行操作
+> 来源：商品管理PRD.md#商品查询
 
 ### 页面入口
 - ...
@@ -132,26 +216,26 @@ Use this structure unless the target project already has a stronger convention:
 ### 业务定义
 - ...
 
-### 显示样式
-- ...
-
-### 交互规则
-- ...
-
 ### 字段与状态
 | 字段/状态 | 必填/可编辑 | 核心约束 |
 | --- | --- | --- |
 | ... | ... | ... |
-
-### 权限与异常
-- ...
 
 ### 研发备注
 - ...
 <!-- anno:end id=1 -->
 ```
 
-原型弹窗默认展示：`页面入口`、`改动逻辑`（由 `业务定义` 改名）、以及其他非隐藏章节。不展示 `页面模式`、`交互规则`、`研发备注`；这三节仍可写在源 Markdown 中，编译后不会进入弹窗。无 `业务定义` 时，弹窗用 `页面模式` 或 `交互规则` 的正文顶上 `改动逻辑`。
+### Popup rendering
+
+Compiled popup shows, in order:
+
+1. Title preamble and `来源`
+2. `页面入口`（正文优先取块内 `### 页面入口`，否则回退 `annotation.config.json` 的 `pageEntry`）
+3. `改动逻辑`（优先取块内 `### 改动逻辑`；无则回退 `业务定义`，再回退 `页面模式` / `交互规则`）
+4. Other `###` sections such as `页面分区`、领域下推表、字段表
+
+Hidden in popup (authoring-only): `页面模式`、`交互规则`、`研发备注`。`业务定义` 不直接展示，编译时并入 `改动逻辑`。
 
 Declare stable source requirements in `annotation.config.json`, then map each annotation using `sourceRefs`:
 

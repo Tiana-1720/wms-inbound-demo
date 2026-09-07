@@ -3,6 +3,7 @@
   "title": "Prototype Annotations",
   "scope": "example",
   "sourceBase": ".",
+  "pageEntry": "- 菜单 → **示例页**\n- 路径 `/example`",
   "runtime": {
     "zIndexBase": 2147480000,
     "initialMode": "preview"
@@ -16,22 +17,22 @@
     {
       "id": "REQ-EXAMPLE-001",
       "source": "../business-prd.md#示例需求",
-      "page": "/"
+      "page": "/example"
     }
   ],
   "annotations": [
     {
-      "id": "1",
-      "page": "/",
-      "moduleName": "示例模块",
+      "id": "0",
+      "page": "/example",
+      "moduleName": "示例页",
       "target": {
-        "selector": "[data-anno='example-module']",
+        "selector": "[data-anno='example-page']",
         "fallbackSelectors": []
       },
       "markdownFile": "",
-      "blockId": "1",
+      "blockId": "0",
       "sourceRefs": ["REQ-EXAMPLE-001"],
-      "markdown": "## 业务定义\n- 在这里填写模块业务说明。\n\n## 交互规则\n- 在这里填写点击、跳转、状态、异常等规则。"
+      "markdown": "## 需求描述：【示例页】\n\n> 来源：business-prd.md#示例需求\n\n### 页面入口\n\n- 菜单 → **示例页**\n\n### 改动逻辑\n\n1. **前置条件**：…\n2. **保存规则**：…\n\n### 页面分区\n\n| 分区 | 要点 |\n| --- | --- |\n| 头部 | … |\n| 表格 | … |\n\n### 研发备注\n\n- 挂载点：`[data-anno='example-page']`。"
     }
   ]
 }

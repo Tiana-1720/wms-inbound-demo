@@ -2,45 +2,45 @@
 
 | 模块 | 来源需求 | 来源位置 | 页面 | 标注Key | 状态 |
 | --- | --- | --- | --- | --- | --- |
-| inbound-order | `REQ-INBOUND-PUSH-001` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.1 收货订单状态机 | /order/Inbound | `inbound-order:1` | 已挂载 |
-| inbound-order | `REQ-INBOUND-PUSH-002` | ../03-01-加盟商揽收仓管理后台主PRD.md#§6.2 收货订单接收与取消（R05/R06/R11） | /order/Inbound | `inbound-order:1` | 已挂载 |
-| inbound-order | `REQ-INBOUND-PUSH-003` | ../02-01-收货订单-入库单字段清单.md#§5.1 状态与动作 | /order/Inbound | `inbound-order:1` | 已挂载 |
-| inbound-order | `REQ-INBOUND-PUSH-005` | ../04-01-收货订单_Demo_列表页.md#§1.4 工具条 | /order/Inbound | `inbound-order:1` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-001` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.2 动作「新增」 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-002` | ../03-01-加盟商揽收仓管理后台主PRD.md#§3.2 / §6.1 / §6.4（R02/R03/R16） | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-003` | ../02-02-调拨计划单字段清单.md#§一 头部字段 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-004` | ../04-03-调拨计划_Demo_新增页.md#§2.2 弹窗底部操作栏 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-005` | ../04-03-调拨计划_Demo_新增页.md#§2.3 弹窗表单区 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-006` | ../04-03-调拨计划_Demo_新增页.md#§2.4 校验与反馈 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| transfer-plan | `REQ-TP-CREATE-007` | ../03-01-加盟商揽收仓管理后台主PRD.md#R29 | /order/TransferPlan | `transfer-plan:4` | 已挂载 |
-| pda-sorting | `REQ-PDA-SORT-001` | ../04-05-分货_Demo.md#§3 进入弹窗（作业托数） | /pda/inbound/sorting | `pda-sorting:1` | 已挂载 |
-| pda-sorting | `REQ-PDA-SORT-002` | ../04-05-分货_Demo.md#§4 扫描区 | /pda/inbound/sorting | `pda-sorting:2` | 已挂载 |
-| pda-sorting | `REQ-PDA-SORT-003` | ../03-02-加盟商揽收仓PDA主PRD.md#§十二 分货绑托 | /pda/inbound/sorting | `pda-sorting:0`, `pda-sorting:1`, `pda-sorting:2`, `pda-sorting:4` | 已挂载 |
-| pda-sorting | `REQ-PDA-SORT-005` | ../04-05-分货_Demo.md#§6–§8 作业格与绑托 | /pda/inbound/sorting | `pda-sorting:4` | 已挂载 |
-| pda-sorting | `REQ-PDA-SORT-006` | ../04-05-分货_Demo.md#§5 落托确认弹窗 | /pda/inbound/sorting | `pda-sorting:5` | 已挂载 |
+| inbound-order | `REQ-INBOUND-PUSH-001` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.1 收货订单状态机 | /order/Inbound | `inbound-order:0` | 已挂载 |
+| inbound-order | `REQ-INBOUND-PUSH-002` | ../03-01-加盟商揽收仓管理后台主PRD.md#§6.2 收货订单接收与取消（R05/R06/R11） | /order/Inbound | `inbound-order:0` | 已挂载 |
+| inbound-order | `REQ-INBOUND-PUSH-003` | ../02-01-收货订单-入库单字段清单.md#§5.1 状态与动作 | /order/Inbound | `inbound-order:0` | 已挂载 |
+| inbound-order | `REQ-INBOUND-PUSH-005` | ../04-01-收货订单_Demo_列表页.md#§1.4 工具条 | /order/Inbound | `inbound-order:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-001` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.2 动作「新增」 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-002` | ../03-01-加盟商揽收仓管理后台主PRD.md#§3.2 / §6.1 / §6.4（R02/R03/R16） | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-003` | ../02-02-调拨计划单字段清单.md#§一 头部字段 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-004` | ../04-03-调拨计划_Demo_新增页.md#§2.2 弹窗底部操作栏 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-005` | ../04-03-调拨计划_Demo_新增页.md#§2.3 弹窗表单区 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-006` | ../04-03-调拨计划_Demo_新增页.md#§2.4 校验与反馈 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| transfer-plan | `REQ-TP-CREATE-007` | ../03-01-加盟商揽收仓管理后台主PRD.md#R29 | /order/TransferPlan | `transfer-plan:0` | 已挂载 |
+| pda-sorting | `REQ-PDA-SORT-001` | ../04-05-分货_Demo.md#§3 进入弹窗（作业托数） | /pda/inbound/sorting | `pda-sorting:0` | 已挂载 |
+| pda-sorting | `REQ-PDA-SORT-002` | ../04-05-分货_Demo.md#§4 扫描区 | /pda/inbound/sorting | `pda-sorting:0` | 已挂载 |
+| pda-sorting | `REQ-PDA-SORT-003` | ../03-02-加盟商揽收仓PDA主PRD.md#§十二 分货绑托 | /pda/inbound/sorting | `pda-sorting:0` | 已挂载 |
+| pda-sorting | `REQ-PDA-SORT-005` | ../04-05-分货_Demo.md#§6–§8 作业格与绑托 | /pda/inbound/sorting | `pda-sorting:0` | 已挂载 |
+| pda-sorting | `REQ-PDA-SORT-006` | ../04-05-分货_Demo.md#§5 落托确认弹窗 | /pda/inbound/sorting | `pda-sorting:0` | 已挂载 |
 | pda-sorting | `REQ-PDA-SORT-MOCK` | ../04-05-分货_Demo.md#§11 Mock 数据规格 | /pda/inbound/sorting | `pda-sorting:A1` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-001` | ../04-06-上架_Demo.md#子页 A | /pda/inbound/putaway | `pda-putaway:1` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-002` | ../04-06-上架_Demo.md#子页 B | /pda/inbound/putaway | `pda-putaway:2`, `pda-putaway:3`, `pda-putaway:4` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-003` | ../04-06-上架_Demo.md#子页 C | /pda/inbound/putaway | `pda-putaway:5` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-004` | ../03-02-加盟商揽收仓PDA主PRD.md#§十一 上架 | /pda/inbound/putaway | `pda-putaway:0`, `pda-putaway:1`, `pda-putaway:3`, `pda-putaway:4` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-005` | ../02-03-上架单字段清单.md | /pda/inbound/putaway | `pda-putaway:2`, `pda-putaway:3` | 已挂载 |
-| pda-putaway | `REQ-PDA-PUT-A1` | ../04-06-上架_Demo.md#B.6 跨库位不一致提醒 | /pda/inbound/putaway | `pda-putaway:4` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-001` | ../04-06-上架_Demo.md#子页 A | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-002` | ../04-06-上架_Demo.md#子页 B | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-003` | ../04-06-上架_Demo.md#子页 C | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-004` | ../03-02-加盟商揽收仓PDA主PRD.md#§十一 上架 | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-005` | ../02-03-上架单字段清单.md | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
+| pda-putaway | `REQ-PDA-PUT-A1` | ../04-06-上架_Demo.md#B.6 跨库位不一致提醒 | /pda/inbound/putaway | `pda-putaway:0` | 已挂载 |
 | pda-putaway | `REQ-PDA-PUT-MOCK` | ../04-06-上架_Demo.md#Mock 数据规格 | /pda/inbound/putaway | `pda-putaway:A1` | 已挂载 |
 | pda-load | `REQ-PDA-LOAD-LIST-001` | ../04-07-装车_Demo.md#§2.2 装车计划列表卡片 | /pda/transfer/load | `pda-load:1` | 已挂载 |
-| pda-load | `REQ-PDA-LOAD-WORK-001` | ../04-07-装车_Demo.md#§2 调拨头信息区 | /pda/transfer/load/:planNo | `pda-load:2` | 已挂载 |
+| pda-load | `REQ-PDA-LOAD-WORK-001` | ../04-07-装车_Demo.md#§2 调拨头信息区 | /pda/transfer/load/:planNo | `pda-load:0` | 已挂载 |
 | pda-load | `REQ-PDA-LOAD-WORK-002` | ../04-07-装车_Demo.md#§3 扫描区 | /pda/transfer/load/:planNo | `pda-load:A1` | 已挂载 |
-| pda-load | `REQ-PDA-LOAD-WORK-004` | ../04-07-装车_Demo.md#§6 底部固定操作栏 | /pda/transfer/load/:planNo | `pda-load:5`, `pda-load:6` | 已挂载 |
-| pda-load | `REQ-PDA-LOAD-WORK-005` | ../04-07-装车_Demo.md#§2.1 司机信息区 | /pda/transfer/load/:planNo | `pda-load:6` | 已挂载 |
-| pda-load | `REQ-PDA-LOAD-WORK-006` | ../03-02-加盟商揽收仓PDA主PRD.md#§十三 空单调拨装车 | /pda/transfer/load/:planNo | `pda-load:0`, `pda-load:1`, `pda-load:A1`, `pda-load:5` | 已挂载 |
-| pda-load | `REQ-PDA-LOAD-WORK-007` | ../02-02-调拨计划单字段清单.md | /pda/transfer/load/:planNo | `pda-load:2` | 已挂载 |
+| pda-load | `REQ-PDA-LOAD-WORK-004` | ../04-07-装车_Demo.md#§6 底部固定操作栏 | /pda/transfer/load/:planNo | `pda-load:0` | 已挂载 |
+| pda-load | `REQ-PDA-LOAD-WORK-005` | ../04-07-装车_Demo.md#§2.1 司机信息区 | /pda/transfer/load/:planNo | `pda-load:0` | 已挂载 |
+| pda-load | `REQ-PDA-LOAD-WORK-006` | ../03-02-加盟商揽收仓PDA主PRD.md#§十三 空单调拨装车 | /pda/transfer/load/:planNo | `pda-load:0`, `pda-load:1`, `pda-load:A1` | 已挂载 |
+| pda-load | `REQ-PDA-LOAD-WORK-007` | ../02-02-调拨计划单字段清单.md | /pda/transfer/load/:planNo | `pda-load:0` | 已挂载 |
 | pda-load | `REQ-PDA-LOAD-WORK-008` | ../03-02-加盟商揽收仓PDA主PRD.md#R31 | /pda/transfer/load/:planNo | `pda-load:A1` | 已挂载 |
 | pda-load | `REQ-PDA-LOAD-MOCK` | ../04-07-装车_Demo.md#§8 Mock 数据规格 | /pda/transfer/load/:planNo | `pda-load:A1` | 已挂载 |
 | outbound-order | `REQ-OUTBOUND-LINK-001` | ../04-09-出库-关联运单.md#§2.1 页面概述 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-002` | ../04-09-出库-关联运单.md#§2.3 头部信息卡片 | /order/Outbound/:id/link-waybill | `outbound-order:1` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-003` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.3 出库单（空单调拨 · 加盟路径增量） | /order/Outbound/:id/link-waybill | `outbound-order:0`, `outbound-order:5` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-004` | ../04-09-出库-关联运单.md#§2.4 选择运单区域 | /order/Outbound/:id/link-waybill | `outbound-order:2`, `outbound-order:3` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-005` | ../04-09-出库-关联运单.md#§2.5 已关联运单明细 | /order/Outbound/:id/link-waybill | `outbound-order:4` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-006` | ../04-09-出库-关联运单.md#§2.6 固定底部操作栏 | /order/Outbound/:id/link-waybill | `outbound-order:5` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-007` | ../02-04-出库单字段清单.md#§一 头部字段、§二 明细字段粗纲 | /order/Outbound/:id/link-waybill | `outbound-order:1`, `outbound-order:4` | 已挂载 |
-| outbound-order | `REQ-OUTBOUND-LINK-008` | ../03-01-加盟商揽收仓管理后台主PRD.md#R14、R20、R22、R50 | /order/Outbound/:id/link-waybill | `outbound-order:0`, `outbound-order:1`, `outbound-order:2`, `outbound-order:3`, `outbound-order:5` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-002` | ../04-09-出库-关联运单.md#§2.3 头部信息卡片 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-003` | ../03-01-加盟商揽收仓管理后台主PRD.md#§5.3 出库单（空单调拨 · 加盟路径增量） | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-004` | ../04-09-出库-关联运单.md#§2.4 选择运单区域 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-005` | ../04-09-出库-关联运单.md#§2.5 已关联运单明细 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-006` | ../04-09-出库-关联运单.md#§2.6 固定底部操作栏 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-007` | ../02-04-出库单字段清单.md#§一 头部字段、§二 明细字段粗纲 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
+| outbound-order | `REQ-OUTBOUND-LINK-008` | ../03-01-加盟商揽收仓管理后台主PRD.md#R14、R20、R22、R50 | /order/Outbound/:id/link-waybill | `outbound-order:0` | 已挂载 |
 | outbound-order | `REQ-OUTBOUND-LINK-009` | ../04-08-出库列表页.md#§1.5.3 行内操作 | /order/Outbound | `outbound-order:0` | 已挂载 |

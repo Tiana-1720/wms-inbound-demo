@@ -65,7 +65,7 @@
       "id": "0",
       "page": "/order/Outbound/:id/link-waybill",
       "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "关联运单页总览",
+      "moduleName": "关联运单页",
       "order": 0,
       "target": {
         "selector": "[data-anno='outbound-link-waybill-page']",
@@ -76,101 +76,14 @@
       "pageEntry": "- 管理后台 → **出库管理 → 出库列表** → 空单调拨行「更多」→ **关联运单**\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
       "sourceRefs": [
         "REQ-OUTBOUND-LINK-001",
+        "REQ-OUTBOUND-LINK-002",
         "REQ-OUTBOUND-LINK-003",
+        "REQ-OUTBOUND-LINK-004",
+        "REQ-OUTBOUND-LINK-005",
+        "REQ-OUTBOUND-LINK-006",
+        "REQ-OUTBOUND-LINK-007",
         "REQ-OUTBOUND-LINK-008",
         "REQ-OUTBOUND-LINK-009"
-      ]
-    },
-    {
-      "id": "1",
-      "page": "/order/Outbound/:id/link-waybill",
-      "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "出库单信息（只读头）",
-      "order": 1,
-      "target": {
-        "selector": "[data-anno='outbound-link-waybill-header']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/outbound-link-waybill.md",
-      "blockId": "1",
-      "pageEntry": "- 管理后台 → **出库管理 → 出库列表** → 行操作「更多」→ **关联运单**\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
-      "sourceRefs": [
-        "REQ-OUTBOUND-LINK-002",
-        "REQ-OUTBOUND-LINK-007",
-        "REQ-OUTBOUND-LINK-008"
-      ]
-    },
-    {
-      "id": "2",
-      "page": "/order/Outbound/:id/link-waybill",
-      "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "选择运单入口",
-      "order": 2,
-      "target": {
-        "selector": "[data-anno='outbound-link-waybill-select']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/outbound-link-waybill.md",
-      "blockId": "2",
-      "pageEntry": "- 管理后台 → **出库管理 → 出库列表** → 行操作「更多」→ **关联运单**\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
-      "sourceRefs": [
-        "REQ-OUTBOUND-LINK-004",
-        "REQ-OUTBOUND-LINK-008"
-      ]
-    },
-    {
-      "id": "3",
-      "page": "/order/Outbound/:id/link-waybill",
-      "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "选择运单弹窗",
-      "order": 3,
-      "target": {
-        "selector": "[data-anno='outbound-link-waybill-select-modal']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/outbound-link-waybill.md",
-      "blockId": "3",
-      "pageEntry": "- 关联运单页 → 点击「**选择运单**」打开弹窗\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
-      "sourceRefs": [
-        "REQ-OUTBOUND-LINK-004",
-        "REQ-OUTBOUND-LINK-008"
-      ]
-    },
-    {
-      "id": "4",
-      "page": "/order/Outbound/:id/link-waybill",
-      "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "运单明细表",
-      "order": 4,
-      "target": {
-        "selector": "[data-anno='outbound-link-waybill-lines']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/outbound-link-waybill.md",
-      "blockId": "4",
-      "pageEntry": "- 管理后台 → **出库管理 → 出库列表** → 行操作「更多」→ **关联运单**\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
-      "sourceRefs": [
-        "REQ-OUTBOUND-LINK-005",
-        "REQ-OUTBOUND-LINK-007"
-      ]
-    },
-    {
-      "id": "5",
-      "page": "/order/Outbound/:id/link-waybill",
-      "routeMatcher": "^/order/Outbound/[^/]+/link-waybill$",
-      "moduleName": "底部取消与确定",
-      "order": 5,
-      "target": {
-        "selector": "[data-anno='outbound-link-waybill-actions']",
-        "fallbackSelectors": []
-      },
-      "markdownFile": "pages/outbound-link-waybill.md",
-      "blockId": "5",
-      "pageEntry": "- 管理后台 → **出库管理 → 出库列表** → 行操作「更多」→ **关联运单**\n- 路径 `/order/Outbound/{出库单号}/link-waybill`",
-      "sourceRefs": [
-        "REQ-OUTBOUND-LINK-006",
-        "REQ-OUTBOUND-LINK-003",
-        "REQ-OUTBOUND-LINK-008"
       ]
     }
   ]

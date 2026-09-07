@@ -56,6 +56,8 @@ export type OutboundOrder = {
   运单号列表: string[]
   /** PC 打印装柜单后标记，确认出库前置（空单调拨） */
   装柜单已打印?: boolean
+  /** 现网出库作业页展示；关联运单页只读对齐 */
+  柜号?: string | null
 }
 
 /** 可选运单（关联运单页 §2.4） */

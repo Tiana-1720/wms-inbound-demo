@@ -1,3 +1,4 @@
+import { resolvePutawayLocation } from '@/domain/putaway/logic'
 import type { PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
 
 function boxNo(seq: number) {
@@ -177,10 +178,7 @@ export function confirmPutawayPallet(
   const pallet = order.托明细.find((item) => item.托号 === 托号)
   if (!pallet || pallet.上架状态 === '已上架') return null
 
-  const inherited = order.托明细.find(
-    (item) => item.上架状态 === '已上架' && item.目标库位,
-  )?.目标库位
-  const finalLocation = inherited ?? 目标库位
+  const finalLocation = resolvePutawayLocation(order, pallet, 目标库位)
 
   pallet.目标库位 = finalLocation
   pallet.上架状态 = '已上架'

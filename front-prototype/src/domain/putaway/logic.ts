@@ -1,15 +1,44 @@
 import type { PutawayOrder, PutawayPallet } from '@/domain/putaway/types'
 
-/** 同运单首托上架后确定的备货库位，后续托自动继承 */
-export function getOrderPutawayLocation(order: PutawayOrder): string | null {
-  const firstDone = order.托明细.find(
-    (pallet) => pallet.上架状态 === '已上架' && pallet.目标库位,
+/** 运单在该上架单下首托已上架的备货库位（按托明细顺序） */
+export function getWaybillPutawayLocation(
+  order: PutawayOrder,
+  运单号: string,
+): string | null {
+  const done = order.托明细.find(
+    (pallet) =>
+      pallet.上架状态 === '已上架' &&
+      pallet.目标库位 &&
+      pallet.运单号列表.includes(运单号),
   )
-  return firstDone?.目标库位 ?? null
+  return done?.目标库位 ?? null
 }
 
-export function isLocationLocked(order: PutawayOrder): boolean {
-  return getOrderPutawayLocation(order) != null
+/** 当前托是否因运单已有上架托而锁定库位（取该运单首托已上架库位） */
+export function getPalletInheritedLocation(
+  order: PutawayOrder,
+  pallet: PutawayPallet,
+): string | null {
+  for (const 运单号 of pallet.运单号列表) {
+    const location = getWaybillPutawayLocation(order, 运单号)
+    if (location) return location
+  }
+  return null
+}
+
+export function isPalletLocationLocked(
+  order: PutawayOrder,
+  pallet: PutawayPallet,
+): boolean {
+  return getPalletInheritedLocation(order, pallet) != null
+}
+
+export function resolvePutawayLocation(
+  order: PutawayOrder,
+  pallet: PutawayPallet,
+  selectedLocation: string,
+): string {
+  return getPalletInheritedLocation(order, pallet) ?? selectedLocation
 }
 
 export function formatWaybillNos(order: PutawayOrder): string {

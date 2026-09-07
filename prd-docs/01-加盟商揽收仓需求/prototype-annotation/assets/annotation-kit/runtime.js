@@ -300,20 +300,22 @@ function prepareDisplayMarkdown(markdown, pageEntry) {
   const { preamble, sections } = splitMarkdownSections(markdown);
   let pageEntryBody = '';
   let changeLogicBody = '';
+  let legacyChangeLogicBody = '';
   let pageModeBody = '';
   let interactionBody = '';
   const otherSections = [];
   for (const section of sections) {
     const { title, body } = section;
     if (startsWithAny(title, ['页面入口'])) pageEntryBody = body;
-    else if (startsWithAny(title, ['业务定义', '改动逻辑'])) changeLogicBody = body;
+    else if (startsWithAny(title, ['改动逻辑'])) changeLogicBody = body;
+    else if (startsWithAny(title, ['业务定义'])) legacyChangeLogicBody = body;
     else if (startsWithAny(title, ['页面模式'])) pageModeBody = body;
     else if (startsWithAny(title, ['交互规则'])) interactionBody = body;
     else if (startsWithAny(title, ['研发备注'])) continue;
     else otherSections.push(section);
   }
   if (!pageEntryBody && String(pageEntry || '').trim()) pageEntryBody = String(pageEntry).trim();
-  if (!changeLogicBody) changeLogicBody = pageModeBody || interactionBody;
+  if (!changeLogicBody) changeLogicBody = legacyChangeLogicBody || pageModeBody || interactionBody;
   const parts = [];
   if (preamble) parts.push(preamble);
   if (pageEntryBody) parts.push(`### 页面入口\n\n${pageEntryBody}`);

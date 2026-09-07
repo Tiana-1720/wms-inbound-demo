@@ -37,16 +37,16 @@
   ],
   "annotations": [
     {
-      "id": "1",
+      "id": "0",
       "page": "/order/Inbound",
-      "moduleName": "页面全局 · 上游发车推送落单",
-      "order": 1,
+      "moduleName": "收货订单列表",
+      "order": 0,
       "target": {
         "selector": "[data-anno='inbound-order-page']",
         "fallbackSelectors": []
       },
       "markdownFile": "pages/inbound-order-list.md",
-      "blockId": "1",
+      "blockId": "0",
       "sourceRefs": [
         "REQ-INBOUND-PUSH-001",
         "REQ-INBOUND-PUSH-002",

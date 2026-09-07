@@ -111,9 +111,9 @@ Support Mermaid as optional Markdown enhancement:
    - Record target label, selector candidates, visible text, role, page path, and visibility state.
    - For a modal, drawer, popover, accordion or tab panel, record the action that reveals it and inspect the target after it is visible.
 4. Aggregate requirements by UI module.
-   - One closely related module gets one annotation badge.
-   - Filter bars, table operations, tabs, forms, modals, drawers, field groups, and batch tools are typical modules.
-   - Add one page-global badge only when cross-field rules would otherwise be scattered across field groups; do not add it to ordinary display-only pages.
+   - **Default**: one page-global badge `id=0` on the page root; summarize UI areas in `### 页面分区` instead of spawning child badges `1`–`5`.
+   - Write `### 改动逻辑` as a numbered list with bold labels (`前置条件`、`保存规则`, …).
+   - Use multi-badge aggregation only for independent PDA zones or legacy list/filter/table splits. Read `references/annotation-authoring.md` § Page-global profile.
 5. Write separate annotation Markdown files.
    - Store them in the selected annotation directory from "Annotation Directory Decision".
    - Add stable source requirement ids and map them through each annotation's `sourceRefs`.
@@ -144,8 +144,9 @@ Support Mermaid as optional Markdown enhancement:
 1. Compare current PRD/page/annotation files.
 2. Classify changes as added, modified, deleted, or moved.
 3. Update only affected annotation Markdown blocks and selector mappings.
+   - For full pages, keep or migrate to the page-global profile: single `id=0`, `改动逻辑` numbered list, `页面分区` table.
    - Keep field-group blocks concise but preserve PRD-defined requiredness, editable conditions, defaults, range, length, precision, format, uniqueness, and validation timing.
-   - Keep save, submit, return, mode, and dirty-form handling in the page-global block when one exists instead of repeating them in every field block.
+   - Prefer `改动逻辑` over legacy `业务定义` / `页面模式` / `交互规则`; do not duplicate the same rule in both `改动逻辑` and `页面分区`.
    - Refresh each affected block's readable `来源` line and its configured `sourceRefs` against the current PRD.
 4. Keep runtime styles, badge shape, offsets, and popup behavior unchanged unless the user explicitly asks for visual changes.
 5. Remove stale badges only when their target module or requirement is truly removed.
@@ -156,9 +157,12 @@ Support Mermaid as optional Markdown enhancement:
 
 Use stable ids rather than implying priority:
 
-- Auto-generated initial annotations: `1`, `2`, `3`.
+- Page-global overview: `0` on the page root container.
+- Auto-generated initial annotations (legacy / zone badges): `1`, `2`, `3`.
 - Supplemental annotations: `A1`, `A2`, `A3`.
 - Nested additions under a known module: `1a`, `1b` only when the user wants explicit relationship to an existing module.
+
+New full pages should start with a single `id=0` block. Do not allocate `1`–`5` for header/table/modal/footer unless the page explicitly uses the multi-badge profile.
 
 Display ids are local to a module. The compiler creates the runtime key as `scope:id`, so `product:1` and `purchase:1` may coexist while both page badges display `1`. View-all and exported documents use `scope:id` to remain unambiguous.
 
@@ -197,7 +201,7 @@ Before final response, verify:
 - Business PRD was not polluted with page annotation content.
 - Annotation Markdown is separate and complete enough for developers.
 - Runtime annotations represent the current prototype only; every block has a readable source line and valid `sourceRefs`.
-- Form pages with cross-field processing have one page-global annotation; field-group annotations preserve the PRD-defined core constraints without expanding generic component conventions.
+- Form pages with cross-field processing have one page-global annotation (`id=0` preferred); field-group annotations preserve the PRD-defined core constraints without expanding generic component conventions.
 - Every declared source requirement maps to at least one annotation, or the user explicitly accepted an unmapped item.
 - Compiled bundle contains no source PRD content outside mapped annotation blocks.
 - Same module does not receive redundant badges.

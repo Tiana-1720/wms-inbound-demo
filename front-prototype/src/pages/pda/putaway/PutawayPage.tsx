@@ -15,8 +15,9 @@ import { ScanInput } from '@/components/pda/ScanInput'
 import {
   findLocationMismatchOnPallet,
   formatWaybillNos,
-  getOrderPutawayLocation,
-  isLocationLocked,
+  getPalletInheritedLocation,
+  isPalletLocationLocked,
+  resolvePutawayLocation,
 } from '@/domain/putaway/logic'
 import type { PutawayPallet } from '@/domain/putaway/types'
 import {
@@ -78,6 +79,20 @@ export function PutawayPage() {
     borderRadius: 8,
   } as const
 
+  const pageShellStyle = {
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    background: token.colorBgLayout,
+  } as const
+
+  const screenShellStyle = {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: 0,
+  } as const
+
   const openWork = (ctx: WorkContext) => {
     setWork(ctx)
     setDraftByPallet({})
@@ -122,13 +137,14 @@ export function PutawayPage() {
     })
   }
 
-  const inheritedLocation = order ? getOrderPutawayLocation(order) : null
-  const locationLocked = order ? isLocationLocked(order) : false
-
   const getEffectiveLocation = (pallet: PutawayPallet) => {
-    if (locationLocked && inheritedLocation) return inheritedLocation
+    const inherited = order ? getPalletInheritedLocation(order, pallet) : null
+    if (inherited) return inherited
     return draftByPallet[pallet.托号] ?? pallet.目标库位 ?? null
   }
+
+  const isLocationLocked = (pallet: PutawayPallet) =>
+    order ? isPalletLocationLocked(order, pallet) : false
 
   const handleReset = () => {
     setDraftByPallet({})
@@ -166,7 +182,7 @@ export function PutawayPage() {
   const handleConfirm = (pallet: PutawayPallet) => {
     const effectiveLocation = getEffectiveLocation(pallet)
     if (!order || !effectiveLocation) return
-    if (!locationLocked) {
+    if (!isLocationLocked(pallet)) {
       const mismatch = findLocationMismatchOnPallet(
         order,
         pallet,
@@ -195,13 +211,13 @@ export function PutawayPage() {
 
   const detailRows = useMemo(() => {
     if (!focusPallet) return []
-    const loc = focusPallet.目标库位 ?? inheritedLocation ?? '-'
+    const loc = getEffectiveLocation(focusPallet) ?? '-'
     return focusPallet.箱号列表.map((box) => ({
       运单号: focusPallet.箱运单[box] ?? '-',
       箱号: box,
       库位: loc,
     }))
-  }, [focusPallet, inheritedLocation, tick])
+  }, [focusPallet, order, draftByPallet, tick])
 
   const filteredDetailRows = useMemo(() => {
     if (!focusPallet) return []
@@ -215,6 +231,7 @@ export function PutawayPage() {
   const renderPalletCard = (pallet: PutawayPallet) => {
     const effectiveLocation = getEffectiveLocation(pallet)
     const readonlyPallet = pallet.上架状态 === '已上架'
+    const locked = isLocationLocked(pallet)
 
     return (
       <Card
@@ -252,7 +269,7 @@ export function PutawayPage() {
             <span style={{ color: token.colorTextSecondary }}>
               {pallet.目标库位}
             </span>
-          ) : locationLocked ? (
+          ) : locked ? (
             <span style={{ color: token.colorTextSecondary }}>
               {effectiveLocation}（自动带出）
             </span>
@@ -271,15 +288,8 @@ export function PutawayPage() {
 
   if (screen === 'detail' && order && focusPallet) {
     return (
-      <div
-        data-anno="pda-putaway-detail"
-        style={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: token.colorBgLayout,
-        }}
-      >
+      <div data-anno="pda-putaway-page" style={pageShellStyle}>
+        <div data-anno="pda-putaway-detail" style={screenShellStyle}>
         <PdaNavBar title="上架明细" onBack={() => setScreen('work')} />
         <div
           style={{
@@ -323,21 +333,15 @@ export function PutawayPage() {
             ))
           )}
         </div>
+        </div>
       </div>
     )
   }
 
   if (screen === 'work' && order && work) {
     return (
-      <div
-        data-anno="pda-putaway-work"
-        style={{
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          background: token.colorBgLayout,
-        }}
-      >
+      <div data-anno="pda-putaway-page" style={pageShellStyle}>
+        <div data-anno="pda-putaway-work" style={screenShellStyle}>
         <PdaNavBar title="上架" onBack={backToEntry} />
 
         <div
@@ -434,23 +438,18 @@ export function PutawayPage() {
           </PdaBottomBar>
           </div>
         )}
+        </div>
       </div>
     )
   }
 
   return (
-    <div
-      data-anno="pda-putaway-entry"
-      style={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        background: token.colorBgLayout,
-      }}
-    >
+    <div data-anno="pda-putaway-page" style={pageShellStyle}>
+      <div data-anno="pda-putaway-entry" style={screenShellStyle}>
       <PdaNavBar title="上架" />
 
       <div
+        data-anno="pda-putaway-scan"
         style={{
           flexShrink: 0,
           margin: 12,
@@ -488,6 +487,7 @@ export function PutawayPage() {
             </Card>
           ))
         )}
+      </div>
       </div>
     </div>
   )

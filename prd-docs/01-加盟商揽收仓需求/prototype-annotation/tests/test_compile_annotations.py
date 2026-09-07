@@ -153,6 +153,49 @@ class CompilerTests(unittest.TestCase):
         self.assertIn("仅新增，无编辑页。", rendered)
         self.assertNotIn("### 页面模式", rendered)
 
+    def test_display_markdown_prefers_change_logic_over_business_definition(self):
+        markdown = """## 需求描述：【关联运单页】
+
+### 业务定义
+
+- 旧版业务定义。
+
+### 改动逻辑
+
+1. **前置条件**：待出库可进入。
+"""
+        rendered = MODULE.prepare_display_markdown(markdown)
+        self.assertIn("待出库可进入", rendered)
+        self.assertNotIn("旧版业务定义", rendered)
+
+    def test_display_markdown_keeps_page_partitions_for_outbound_profile(self):
+        markdown = """## 需求描述：【关联运单页】
+
+### 页面入口
+
+- 出库列表 → **关联运单**
+
+### 改动逻辑
+
+1. **保存规则**：校验可用库存。
+
+### 页面分区
+
+| 分区 | 要点 |
+| --- | --- |
+| 运单明细 | 只读表 |
+
+### 研发备注
+
+- 挂载点：page-root。
+"""
+        rendered = MODULE.prepare_display_markdown(markdown)
+        self.assertIn("### 页面分区", rendered)
+        self.assertIn("运单明细", rendered)
+        self.assertIn("### 改动逻辑", rendered)
+        self.assertIn("校验可用库存", rendered)
+        self.assertNotIn("### 研发备注", rendered)
+
     def test_compile_injects_config_page_entry(self):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "annotation.config.json"
