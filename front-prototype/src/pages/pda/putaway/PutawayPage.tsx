@@ -17,7 +17,6 @@ import {
   formatWaybillNos,
   getPalletInheritedLocation,
   isPalletLocationLocked,
-  resolvePutawayLocation,
 } from '@/domain/putaway/logic'
 import type { PutawayPallet } from '@/domain/putaway/types'
 import {
